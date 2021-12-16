@@ -68,60 +68,6 @@
 					</c:forEach>
 				</table>
 				
-				
-				<!--------------- 검색 처리 ----------------->
-				<div class='row'>
-					<div class="col-sm-7">
-
-						<form id='searchForm' action="/post/list" method='get'>
-							<select name='type'>
-								<option value=""
-									<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-								<option value="T"
-									<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-								<option value="C"
-									<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-								<option value="W"
-									<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-								
-							</select> 
-									<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' /> 
-									<input type='hidden' name='pageNum' value='<c:out value="${pageMaker.cri.pageNum}"/>' /> 
-									<input type='hidden' name='amount' value='<c:out value="${pageMaker.cri.amount}"/>' />
-									<input type='hidden' name='board_num' value='<c:out value="${board_num}"/>' />
-									<input type='hidden' name='team_num' value='${team_num}'>
-									<input type='hidden' name='member_num' value='${member_num }'>
-							<button class='btn btn-default'>검색</button>
-						</form>
-					</div>
-				</div> 
-
-				<!---------------- 페이지 처리 ----------------->
-				<div class='pull-right'>
-					<ul class="pagination">
-					
-						<c:if test="${pageMaker.prev}">
-							<li class="paginate_button previous"><a
-								href="${pageMaker.startPage -1}">이전</a></li>
-						</c:if>
-
-						<c:forEach var="num" begin="${pageMaker.startPage}"
-							end="${pageMaker.endPage}">
-							<!--선택한 번호 이벤트처리(삼항연산자) -->
-							<li class="paginate_button  ${pageMaker.cri.pageNum == num ? "active":""} ">
-								<a href="${num}">${num}</a><!--이벤트 처리-->
-							</li>
-						</c:forEach>
-
-						<c:if test="${pageMaker.next}">
-							<li class="paginate_button next"><a
-								href="${pageMaker.endPage +1 }">이후</a></li>
-						</c:if>
-						
-
-					</ul>
-				</div>
-				<!--  end Pagination -->
 			</div>
 
 
@@ -149,51 +95,7 @@
 			<!--/.modal-->
 			
 			
-		<!--======게시판 생성 모달창===== -->
-      <div class="modal" id="settingBoard" tabindex="-1" role="dialog"
-        aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button type="button" class="close" data-dismiss="modal"
-                aria-hidden="true">&times;</button>
-              <h4 class="modal-title" id="myModalLabel">게시판 수정</h4>
-            </div>
-            <div class="modal-body">
-              <div class="form-group">
-               		<label>게시판 이름</label> 
-                	<input class="form-control" name='board_name' value=''>
-              </div>      
-              <div class="form-group">
-                	<label>게시판 정보</label> 
-                	<input class="form-control" name='board_info' value=''>
-              </div>
-            </div>
-            
-			<div class="modal-footer">
-        		<button id='modalBoardModBtn' type="button" class="btn btn-info">수정</button>
-        		<button id='modalBoardDeleteBtn' type="button" class="btn btn-danger">삭제</button>
-        		<button id='modalBoardCloseBtn' type="button" class="btn btn-default">취소</button>
-       		</div>
-		</div>
-  	</div>
-</div>
-<!--  게시판 생성모달 끝-->
-			
-			
-			
-								<!---------------form을 이용한 데이터 유지-------------->
-								<form id='listForm' action="/post/list" method='get'>
-										<input type='hidden' name='keyword' value='${pageMaker.cri.keyword}'>
-										<input type='hidden' name='type' value='${pageMaker.cri.type}'>  
-										<input type='hidden' name='pageNum' value='${pageMaker.cri.pageNum}'>
-										<input type='hidden' name='amount' value='${pageMaker.cri.amount}'>
-										<input type='hidden' name='board_num' value='${board_num}'>
-										<input type='hidden' name='team_num' value='${team_num}'>
-										<input type='hidden' name='member_num' value='${member_num }'>
-										<input type='hidden' name='user_name' value='<sec:authentication property="principal.users.user_name"/>'>
-								</form>
-			
+		
 		</div>
 		<!--  end panel-body -->
 	</div>

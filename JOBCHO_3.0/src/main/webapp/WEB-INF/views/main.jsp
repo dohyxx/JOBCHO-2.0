@@ -1,13 +1,15 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
 <%@ taglib prefix="sec"
 	uri="http://www.springframework.org/security/tags"%>
 <%@ page session="false"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
 <html>
 <head>
 <meta charset='utf-8'>
-<title>JOBCHO 2.0</title>
+<title>JOBCHO 3.0</title>
 <!-- fullcalendar CDN -->
 <link
 	href="https://cdn.jsdelivr.net/npm/fullcalendar@5.8.0/main.min.css"
@@ -152,6 +154,32 @@
 	<!--왼쪽 사이드바 끝-->
 	<!--왼쪽 사이드바 끝-->
 	<!--왼쪽 사이드바 끝-->
+	
+	
+	
+	
+	<!-- 게시글 시작 -->
+	
+	
+	<!-- /.col-lg-12 -->
+
+<!-- /.row -->
+	<div class="row" style="margin-top: 60px">
+	
+	
+	
+	
+	
+	<div>
+	
+	<!-- 게시글 끝  -->
+	
+	
+	
+	
+	
+	
+	
 
 	<!--오른쪽 사이드바-->
 	<!--오른쪽 사이드바-->
@@ -455,7 +483,7 @@
 	</form>
 
 	<!-- modal 모음-->
-	<div class="row">
+	
 		<div class="modal" id="modal" tabindex="-1">
 			<div class="modal-dialog">
 				<div class="modal-content">
@@ -883,6 +911,7 @@
 	<script src="/resources/chat/js/onchat.js"></script>
 	<script src="/resources/chat/js/dragable.js"></script>
 	<script src="/resources/board/board.js?version=20211206"></script>
+	<script src="/resources/post/post.js?version=20211216"></script>
 	<script src="/resources/members/js/vote.js"></script>
 	<script src="/resources/members/js/memberProfile.js"></script>
 	<!-- 외부js에 변수 전달 -->
@@ -1229,7 +1258,6 @@ $(document).ready(function(){
 	
 	console.log("유저넘 : " + user_num)
 	
-	
 	//게시판 목록 호출
 	showList(); 
 	
@@ -1305,17 +1333,85 @@ $(document).ready(function(){
 			});
 		});
 	
-		//게시판 이름 클릭시 게시글로 이동
-		var actionForm = $("#actionForm");
-		
+		//게시판 이름 클릭시 게시글 출력(비동기식 전환)
 		$("#board").on("click", "a", function(e){
 			
-			console.log("게시글로 이동")
+			var board_num = $(this).attr("href");//클릭한 게시판 번호저장
 			e.preventDefault();
 			
-			actionForm.find("input[name='board_num']").val($(this).attr("href"));//클릭한 게시판 번호저장
-			actionForm.submit();
+			listPost.getListPost({team_num:team_num, board_num:board_num}, function(post){ //board.js 호출
+				
+				console.log("게시글 목록 callback: " +board_num );
+				var str ="";
+				var str1="";
+				
+				//게시글 기본틀 출력하는 부분
+				for(var i = 0; i < 1; i++){
+				str1 = `<div class="row" style="margin-top: 60px">
+							<div class="col-sm-7" style="margin-left: 450px">
+							<h1 class="page-header">
+							`+post[i].board.board_name+`
+							</h1>
+							</div>
+						</div>
+						<div class="col-sm-7" style="margin-left: 450px">
+						  <div class="panel panel-default">
+						  <div class="panel-heading">`+post[i].board.board_info+`
+						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
+						</div>
+					<div class="panel-body">
+						<table class="table table-striped table-bordered table-hover">
+							<thead>
+								<tr>
+									<th>번호</th>
+									<th>제목</th>
+									<th>작성자</th>
+									<th>작성일</th>
+								</tr>
+							</thead>
+							<tbody id="post-list">
+							
+							</tbody>
+						</table>
+						<div class='row'>
+						<div class="col-sm-7">
+							<form id='searchForm' action="/post/list" method='get'>
+								<select name='type'>
+									<option value=""
+										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
+									<option value="T"
+										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
+									<option value="C"
+										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
+									<option value="W"
+										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
+								</select> 
+								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
+								<button class='btn btn-default'>검색</button>
+							</form>
+						</div>
+					</div> 
+					</div>
+					</div>`+str1;
+				}
+				//게시글 목록 출력하는 부분
+				for(var i = 0; i < post.length; i++){
+				str = `<tr><td>`+post[i].post_num+`</td>
+						<td>
+							<a class="move" href=`+post[i].post_num+`> `+post[i].post_title+`<b>[`+post[i].replycnt+`]</b></a>	
+						</td>
+						<td>`+post[i].writer+`</td>
+						<td>`+post[i].post_date+`</td>
+						</tr>`+str;	
+				}
+				$(".row").html(str1);
+				$("#post-list").html(str);
+			});
 		});
+		
+		
+		
+		
 		
 		
 		//사용자 이미지 관련

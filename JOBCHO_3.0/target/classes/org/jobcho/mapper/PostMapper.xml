@@ -4,59 +4,54 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.jobcho.mapper.PostMapper">
 
+	<resultMap type="org.jobcho.domain.PostVO" id="PostMember">
+		<result property="post_num" column="post_num"/>
+		<result property="post_title" column="post_title"/>
+		<result property="post_contents" column="post_contents"/>
+		<result property="board_num" column="board_num"/>
+		<result property="member_num" column="member_num"/>
+		<result property="post_date" column="post_date"/>
+		<result property="isLive" column="islive"/>
+		<result property="writer" column="writer"/>
+		<association property="board" javaType="org.jobcho.domain.BoardVO">
+			<id property="board_num" column="board_num"/>
+			<result property="board_name" column="board_name"/>
+			<result property="board_info" column="board_info"/>
+			<result property="member_num" column="member_num"/>
+			<result property="team_num" column="team_num"/>
+		</association>
+	</resultMap>
+	
+	
+	<!-- 게시글 리스트 조회 -->
+	<select id="getListPost" parameterType="int" resultMap="PostMember">
+		<![CDATA[ 
+				select *
+				from post p, board b 
+				where p.board_num = b.board_num
+				and p.board_num = #{board_num}
+				and p.islive =1
+
+		]]>	
+	</select>
+
+
+
 	<!-- 게시글 생성 -->
 	<insert id="insertPost" parameterType="org.jobcho.domain.PostVO">
 			insert into post(
-				post_num, post_title, post_contents, board_num, member_num, post_date, islive, writer
+				post_num, post_title, post_contents, board_num, member_num, post_date, islive
 			)
-			values(post_num.nextval, #{post_title}, #{post_contents}, #{board_num}, #{member_num}, default, default, #{writer})
+			values(post_num.nextval, #{post_title}, #{post_contents}, #{board_num}, #{member_num}, default, default)
 	</insert>
 	
-	
-	<!-- 게시글 리스트 + 페이지 처리 -->
-	<select id="getListPost" parameterType="hashMap" resultType="org.jobcho.domain.PostVO">
-		<![CDATA[ 
-				select *
-				from(
-					select /*+INDEX_asc(post SYS_C007525) */
-						 rownum rn, post_num, post_title, post_contents, board_num, member_num, post_date, islive, replycnt,writer
-					from post
-					where
-		]]>	
-			<trim prefix="(" suffix=") AND " prefixOverrides="OR">
-			<foreach item='type' collection="cri.typeArr">
-				<trim prefix="OR">
-					<choose>
-						<when test="type == 'T'.toString()">
-							post_title like '%'||#{cri.keyword}||'%'
-						</when>
-						<when test="type == 'C'.toString()">
-							post_contents like '%'||#{cri.keyword}||'%'
-						</when>
-						<when test="type == 'W'.toString()">
-							writer like '%'||#{cri.keyword}||'%'
-						</when>
-					</choose>
-				</trim>
-			</foreach>
-		</trim>
-			
-		<![CDATA[
-				rownum <= #{cri.pageNum} * #{cri.amount}
-				and board_num = #{board_num}
-				and islive = 1 		 
-				)
-				where rn > (#{cri.pageNum} -1) * #{cri.amount}
-				and board_num = #{board_num}
-				and islive = 1
-		]]>	
-	</select>
-	
+
 	<!-- 게시글 상세조회 -->
 	<select id="getPost" parameterType="int" resultType="org.jobcho.domain.PostVO">
 		<![CDATA[ 
 				select * from post
 				where post_num = #{post_num}
+				and islive = 1
 			]]>
 	</select>
 	
@@ -69,48 +64,27 @@
 	
 	
 	<!-- 게시글 삭제 -->
-	<delete id="deletePost">
+	<delete id="deletePost"  parameterType="int">
 		update post set islive = 0
 		where post_num = #{post_num}
 	</delete>
 	
 	
-	<!-- 전체 글 수 -->
-	<select id="getTotalCount" parameterType="hashMap" resultType="int">
-	<![CDATA[ 
+	<!-- 전체 게시글 수 -->
+	<select id="getTotalCount" resultType="int">
 		select count(*) from post 
-		where 
-	]]>
-		<trim prefix="(" suffix=") AND " prefixOverrides="OR">
-			<foreach item='type' collection="cri.typeArr">
-				<trim prefix="OR">
-					<choose>
-						<when test="type == 'T'.toString()">
-							post_title like '%'||#{cri.keyword}||'%'
-						</when>
-						<when test="type == 'C'.toString()">
-							post_contents like '%'||#{cri.keyword}||'%'
-						</when>
-						<when test="type == 'W'.toString()">
-							writer like '%'||#{cri.keyword}||'%'
-						</when>
-					</choose>
-				</trim>
-			</foreach>
-		</trim>
-			
-	<![CDATA[
-		board_num = #{board_num}
-		and islive = 1
-	]]>
+		where
+		
+		post_num > 0
 	</select>
 	
 	
-	<!--  댓글 수 업데이트 -->
+	<!-- 댓글 수 업데이트 -->
 	<update id="updateReplyCnt">
 		update post set replycnt = replycnt + #{amount}
 		where post_num = #{post_num}
 	</update>
+	
 	
 	
 
