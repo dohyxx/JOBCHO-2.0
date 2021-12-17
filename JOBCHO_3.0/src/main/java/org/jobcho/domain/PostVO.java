@@ -1,5 +1,6 @@
 package org.jobcho.domain;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostVO {
+public class PostVO implements Serializable{
 	private int post_num;
 	private String post_title;
 	private String post_contents;

@@ -1248,7 +1248,7 @@ $(document).ready(function(){
 	var boardUL = $("#board"); //게시판 리스트 들어가는 부분
 	var user_num = $("#userNum").val();
 	
-	console.log("유저넘 : " + user_num)
+	console.log("유저번호: " + user_num)
 	
 	//게시판 목록 호출
 	showList(); 
@@ -1409,6 +1409,7 @@ $(document).ready(function(){
 			});
 		});
 		
+		var postNum = "";
 		
 		//게시글 상세조회
 		$(".row").on("click", "a", function(e){
@@ -1417,6 +1418,7 @@ $(document).ready(function(){
 			var post_num = $(this).attr("href");
 			console.log("리스트에서 상세조회로 전달: " +boardName);
 			
+			postNum = post_num;
 			//기본 이벤트 삭제
 			e.preventDefault();
 			
@@ -1460,8 +1462,337 @@ $(document).ready(function(){
 				  		
 				  		$(".row").html(str);
 			});
+		}); // end getPost
+		
+			
+		//상세조회에서 목록버튼 클릭 시 다시 리스트로 돌아간다.
+		$(".row").on("click", "button[data-oper='list']", function(e){
+			
+			//post.js- getListPost 메서드 호출
+			listPost.getListPost({team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
+				
+				console.log("게시글 목록 callback: " +map.getListPost[0] );
+				boardName = map.board.board_name;
+				boardInfo = map.board.board_info;
+				var str ="";
+				var str1="";
+				
+				//게시글 기본틀 출력하는 부분
+				str1 = `<div class="row" style="margin-top: 60px">
+							<div class="col-sm-7" style="margin-left: 450px">
+							<h1 class="page-header">`+map.board.board_name+`</h1>
+							</div>
+							</div>
+						<div class="col-sm-7" style="margin-left: 450px">
+						  <div class="panel panel-default">
+						  <div class="panel-heading">`+map.board.board_info+`
+						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
+						</div>
+					<div class="panel-body">
+						<table class="table table-striped table-bordered table-hover">
+							<thead>
+								<tr>
+									<th>번호</th>
+									<th>제목</th>
+									<th>작성자</th>
+									<th>작성일</th>
+								</tr>
+							</thead>
+							<tbody id="post-list">
+							
+							</tbody>
+						</table>
+						<div class='row'>
+						<div class="col-sm-7">
+							<form id='searchForm' action="/post/list" method='get'>
+								<select name='type'>
+									<option value=""
+										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
+									<option value="T"
+										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
+									<option value="C"
+										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
+									<option value="W"
+										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
+								</select> 
+								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
+								<button class='btn btn-default'>검색</button>
+							</form>
+						</div>
+					</div> 
+					</div>
+					</div>`+str1;
+				
+				//게시글 목록 출력하는 부분
+				for(var i = 0; i < map.getListPost.length; i++){
+				str = `<tr><td>`+map.getListPost[i].post_num+`</td>
+						<td>
+							<a class="move" href=`+map.getListPost[i].post_num+`> `+map.getListPost[i].post_title+`<b>[`+map.getListPost[i].replycnt+`]</b></a>	
+						</td>
+						<td>`+map.getListPost[i].writer+`</td>
+						<td>`+map.getListPost[i].post_date+`</td>
+						</tr>`+str;	
+				}
+				$(".row").html(str1);
+				$("#post-list").html(str);
+			});
 		});
 		
+		
+		// '글쓰기' 버튼 클릭 시 작성폼 띄우기
+		$(".row").on("click", "#regBtn", function(e){
+			
+			console.log("글쓰기 버튼 클릭");
+			
+		 	var str = `<div class="row" style="margin-top: 60px">
+							<div class="col-sm-7" style="margin-left: 450px">
+							<h1 class="page-header">`+boardName+`</h1>
+							</div>
+							</div>
+							<div class="col-sm-7" style="margin-left: 450px">
+		 		    			<div class="panel panel-default">
+		 		    			<div class="panel-heading">`+boardInfo+`</div>
+		 		      		<div class="panel-body">
+		           				<div class="form-group">
+		             			<label>제목</label> <input class="form-control" id="form-control1" name='post_title'>
+		           				</div>
+		           				<div class="form-group">
+		             			<label>내용</label>
+		             			<textarea class="form-control" id="form-control2" rows="7" name='post_contents'></textarea>
+		           				</div>
+		           				<div class="form-group">
+		             			<label>작성자</label> <input class="form-control" id="form-control3" type="text" name='writer' value=<sec:authentication property="principal.users.user_name"/> readonly="readonly">
+		           				</div>
+		           				<button id='submit' class="btn btn-primary">등록</button>
+		           				<button id='reset' type="reset" class="btn btn-default">취소</button>
+		       				</div>
+		     				</div>
+		   					</div>`+str;
+		 					
+		 					$(".row").html(str);
+		 					
+					});
+		
+		
+		// 게시글 생성. 작성한 폼 Ajax요청
+		$(".row").on("click", "#submit", function(e){
+			
+			var post_title =  document.getElementById('form-control1').value;
+			var post_contents = document.getElementById('form-control2').value;
+			var writer = document.getElementById('form-control3').value;
+			
+			console.log("게시글 생성" + post_title);
+			
+			var post = {
+					post_title: post_title,
+					post_contents: post_contents,
+					member_num: member_num,
+					writer: writer
+			};
+			
+			//post.js-insertPost 호출
+			listPost.insertPost(post, {team_num:team_num, board_num:boardNum}, function(result){
+				console.log("게시글 생성 callback" + result);
+				if(result == "success"){
+					alert("게시글이 등록되었습니다.");
+				}
+				
+				//게시글 등록 후 목록 갱신
+				listPost.getListPost({team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
+					
+					console.log("게시글 목록 callback: " +map.getListPost[0] );
+					boardName = map.board.board_name;
+					boardInfo = map.board.board_info;
+					var str ="";
+					var str1="";
+					
+					//게시글 기본틀 출력하는 부분
+					str1 = `<div class="row" style="margin-top: 60px">
+								<div class="col-sm-7" style="margin-left: 450px">
+								<h1 class="page-header">`+map.board.board_name+`</h1>
+								</div>
+								</div>
+							<div class="col-sm-7" style="margin-left: 450px">
+							  <div class="panel panel-default">
+							  <div class="panel-heading">`+map.board.board_info+`
+							<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
+							</div>
+						<div class="panel-body">
+							<table class="table table-striped table-bordered table-hover">
+								<thead>
+									<tr>
+										<th>번호</th>
+										<th>제목</th>
+										<th>작성자</th>
+										<th>작성일</th>
+									</tr>
+								</thead>
+								<tbody id="post-list">
+								
+								</tbody>
+							</table>
+							<div class='row'>
+							<div class="col-sm-7">
+								<form id='searchForm' action="/post/list" method='get'>
+									<select name='type'>
+										<option value=""
+											<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
+										<option value="T"
+											<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
+										<option value="C"
+											<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
+										<option value="W"
+											<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
+									</select> 
+									<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
+									<button class='btn btn-default'>검색</button>
+								</form>
+							</div>
+						</div> 
+						</div>
+						</div>`+str1;
+					
+					//게시글 목록 출력하는 부분
+					for(var i = 0; i < map.getListPost.length; i++){
+					str = `<tr><td>`+map.getListPost[i].post_num+`</td>
+							<td>
+								<a class="move" href=`+map.getListPost[i].post_num+`> `+map.getListPost[i].post_title+`<b>[`+map.getListPost[i].replycnt+`]</b></a>	
+							</td>
+							<td>`+map.getListPost[i].writer+`</td>
+							<td>`+map.getListPost[i].post_date+`</td>
+							</tr>`+str;	
+					}
+					$(".row").html(str1);
+					$("#post-list").html(str);
+					
+				});// end getListPost
+			}); // end insertPost
+		}); // end event
+		
+		
+		
+		//글쓰기에서 취소버튼 클릭 시 다시 리스트로 돌아간다.
+		$(".row").on("click", "#reset", function(e){
+				console.log("글쓰기에서 다시 리스트로");
+			
+			//post.js- getListPost 메서드 호출
+			listPost.getListPost({team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
+				
+				boardName = map.board.board_name;
+				boardInfo = map.board.board_info;
+				var str ="";
+				var str1="";
+				
+				//게시글 기본틀 출력하는 부분
+				str1 = `<div class="row" style="margin-top: 60px">
+							<div class="col-sm-7" style="margin-left: 450px">
+							<h1 class="page-header">`+map.board.board_name+`</h1>
+							</div>
+							</div>
+						<div class="col-sm-7" style="margin-left: 450px">
+						  <div class="panel panel-default">
+						  <div class="panel-heading">`+map.board.board_info+`
+						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
+						</div>
+					<div class="panel-body">
+						<table class="table table-striped table-bordered table-hover">
+							<thead>
+								<tr>
+									<th>번호</th>
+									<th>제목</th>
+									<th>작성자</th>
+									<th>작성일</th>
+								</tr>
+							</thead>
+							<tbody id="post-list">
+							
+							</tbody>
+						</table>
+						<div class='row'>
+						<div class="col-sm-7">
+							<form id='searchForm' action="/post/list" method='get'>
+								<select name='type'>
+									<option value=""
+										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
+									<option value="T"
+										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
+									<option value="C"
+										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
+									<option value="W"
+										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
+								</select> 
+								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
+								<button class='btn btn-default'>검색</button>
+							</form>
+						</div>
+					</div> 
+					</div>
+					</div>`+str1;
+				
+				//게시글 목록 출력하는 부분
+				for(var i = 0; i < map.getListPost.length; i++){
+				str = `<tr><td>`+map.getListPost[i].post_num+`</td>
+						<td>
+							<a class="move" href=`+map.getListPost[i].post_num+`> `+map.getListPost[i].post_title+`<b>[`+map.getListPost[i].replycnt+`]</b></a>	
+						</td>
+						<td>`+map.getListPost[i].writer+`</td>
+						<td>`+map.getListPost[i].post_date+`</td>
+						</tr>`+str;	
+				}
+				$(".row").html(str1);
+				$("#post-list").html(str);
+			});
+		}); //end 글쓰기에서 리스트
+		
+		
+		// 상세조회에서 수정버튼 클릭 시 수정폼으로 이동
+		$(".row").on("click", "button[data-oper='modify']", function(e){
+				console.log("게시글 수정폼으로 이동: " + postNum);
+				
+				//수정 전 게시글 번호에 해당하는 게시글을 가져와 보여준다.
+				listPost.getPost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(post){
+					
+					var str ="";
+					
+					str = `<div class="row" style="margin-top: 60px">
+								<div class="col-sm-7" style="margin-left: 450px">
+								<h1 class="page-header">`+boardName+`</h1>
+								</div>
+								</div>
+								<div class="col-sm-7" style="margin-left: 450px">
+								<div class="panel panel-default">
+								<div class="panel-heading">게시글 수정</div>
+								<div class="panel-body">
+									<div class="form-group">
+										<label>글 번호</label> 
+										<input class="form-control" name='post_num' value=`+post.post_num+` readonly="readonly">
+									</div>
+									<div class="form-group">
+										<label>제목</label> 
+										<textarea class="form-control" rows="1" name='post_contents'>`+post.post_title+`</textarea>
+									</div>
+									<div class="form-group">
+										<label>내용</label>
+										<textarea class="form-control" rows="3" name='post_contents'>`+post.post_contents+`</textarea>
+									</div>
+									<div class="form-group">
+										<label>작성자</label> 
+										<input class="form-control" name='writer' value=<sec:authentication property="principal.users.user_name"/>  readonly="readonly">
+									</div>
+									<div class="form-group">
+										<label>작성일</label> 
+										<input class="form-control" name='post_date' value=`+post.post_date+` readonly="readonly">
+									</div>
+									<button type="submit" data-oper='modify2' class="btn btn-info">수정</button>
+									<button type="submit" data-oper='remove' class="btn btn-danger">삭제</button>
+									<button type="submit" data-oper='list' class="btn btn-default">목록</button>
+							</div>
+							</div>
+							</div>` +str;
+							
+							$(".row").html(str);
+				});
+		}); // end 수정폼이동
 		
 		
 		
@@ -1495,6 +1826,7 @@ $(document).ready(function(){
 		
 }); //end document.ready1
 </script>
+
 
 <!-- Calendar Script -->
 <script>

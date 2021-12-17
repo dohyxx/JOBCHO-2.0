@@ -46,32 +46,24 @@ var listPost = (function() {
 		});
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	//게시판 생성
-	function insertBoard(board, param, callback, error) {
-		var team_num = param.team_num;
-		console.log("게시판 생성: "+team_num );
+	function insertPost(post, param, callback, error) {
 		
-		if(!board.board_name){ //게시판 이름 작성 안했을 시
-			alert("게시판 이름을 작성해주세요.");
+		
+		if(!post.post_title){ //게시판 이름 작성 안했을 시
+			alert("게시글 제목을 작성해주세요.");
 			return false;
 		}
-		if(!board.board_info){//게시판 정보 작성 안했을 시
-			alert("게시판 정보를 작성해주세요.");
+		if(!post.post_contents){//게시판 정보 작성 안했을 시
+			alert("게시글 내용을 작성해주세요.");
 			return false;
 		}
 		
 		$.ajax({
 			type : 'post',
-			url : "/team/"+ team_num +"/board/new", //team번호 전달
-			data : JSON.stringify(board), //board객체 전달
+			url : "/team/"+ param.team_num +"/board/"+param.board_num+"/post/new", //team,board번호 전달
+			data : JSON.stringify(post), //post객체 전달
 			contentType : "application/json; charset=utf-8",
 			success : function(result, status, xhr) {
 				if(callback){
@@ -117,7 +109,8 @@ var listPost = (function() {
 	return {  //객체로 리턴 (변수에 함수를 넣음)
 		
 		getListPost : getListPost,
-		getPost : getPost
+		getPost : getPost,
+		insertPost : insertPost
 	};
 
 })(); //end listPost

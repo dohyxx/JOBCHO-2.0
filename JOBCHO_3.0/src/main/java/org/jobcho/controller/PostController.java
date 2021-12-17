@@ -41,7 +41,7 @@ public class PostController {
 	 *board_num, member_num 필요
 	*/
 	@PostMapping("/new")
-	public ResponseEntity<PostVO> insertPost(@RequestBody PostVO post,
+	public ResponseEntity<String> insertPost(@RequestBody PostVO post,
 																		  @PathVariable("board_num") int board_num){
 		
 		post.setBoard_num(board_num);
@@ -51,9 +51,8 @@ public class PostController {
 
 		int insertCount = service.insertPost(post);
 		
-		return insertCount == 1
-				? new ResponseEntity<>(HttpStatus.OK)
-				:  new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		return new ResponseEntity<>("success", HttpStatus.OK);
+				
 	}
 	
 	

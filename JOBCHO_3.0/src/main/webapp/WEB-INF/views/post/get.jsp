@@ -33,7 +33,7 @@
       <div class="panel-heading"> ${board.board_info }</div>
       <!-- /.panel-heading -->
       <div class="panel-body">
-
+1
           <div class="form-group">
           <label>글 번호</label> <input class="form-control" name='bno'
             value='<c:out value="${post.post_num }"/>' readonly="readonly">

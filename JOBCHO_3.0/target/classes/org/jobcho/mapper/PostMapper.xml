@@ -40,9 +40,9 @@
 	<!-- 게시글 생성 -->
 	<insert id="insertPost" parameterType="org.jobcho.domain.PostVO">
 			insert into post(
-				post_num, post_title, post_contents, board_num, member_num, post_date, islive
+				post_num, post_title, post_contents, board_num, member_num, post_date, islive, writer
 			)
-			values(post_num.nextval, #{post_title}, #{post_contents}, #{board_num}, #{member_num}, default, default)
+			values(post_num.nextval, #{post_title}, #{post_contents}, #{board_num}, #{member_num}, default, default, #{writer})
 	</insert>
 	
 
