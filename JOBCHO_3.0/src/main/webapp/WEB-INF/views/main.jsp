@@ -1339,24 +1339,24 @@ $(document).ready(function(){
 			var board_num = $(this).attr("href");//클릭한 게시판 번호저장
 			e.preventDefault();
 			
-			listPost.getListPost({team_num:team_num, board_num:board_num}, function(post){ //board.js 호출
+			//board.js- getListPost 메서드 호출
+			listPost.getListPost({team_num:team_num, board_num:board_num}, function(map){ //map으로 리턴받는다.
 				
-				console.log("게시글 목록 callback: " +board_num );
+				console.log("게시글 목록 callback: " +map.getListPost[0] );
 				var str ="";
 				var str1="";
 				
 				//게시글 기본틀 출력하는 부분
-				for(var i = 0; i < 1; i++){
 				str1 = `<div class="row" style="margin-top: 60px">
 							<div class="col-sm-7" style="margin-left: 450px">
 							<h1 class="page-header">
-							`+post[i].board.board_name+`
+							`+map.board.board_name+`
 							</h1>
 							</div>
 						</div>
 						<div class="col-sm-7" style="margin-left: 450px">
 						  <div class="panel panel-default">
-						  <div class="panel-heading">`+post[i].board.board_info+`
+						  <div class="panel-heading">`+map.board.board_info+`
 						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
 						</div>
 					<div class="panel-body">
@@ -1393,15 +1393,15 @@ $(document).ready(function(){
 					</div> 
 					</div>
 					</div>`+str1;
-				}
+				
 				//게시글 목록 출력하는 부분
-				for(var i = 0; i < post.length; i++){
-				str = `<tr><td>`+post[i].post_num+`</td>
+				for(var i = 0; i < map.getListPost.length; i++){
+				str = `<tr><td>`+map.getListPost[i].post_num+`</td>
 						<td>
-							<a class="move" href=`+post[i].post_num+`> `+post[i].post_title+`<b>[`+post[i].replycnt+`]</b></a>	
+							<a class="move" href=`+map.getListPost[i].post_num+`> `+map.getListPost[i].post_title+`<b>[`+map.getListPost[i].replycnt+`]</b></a>	
 						</td>
-						<td>`+post[i].writer+`</td>
-						<td>`+post[i].post_date+`</td>
+						<td>`+map.getListPost[i].writer+`</td>
+						<td>`+map.getListPost[i].post_date+`</td>
 						</tr>`+str;	
 				}
 				$(".row").html(str1);
