@@ -25,6 +25,35 @@ var listPost = (function() {
 		});
 	}
 	
+	//게시글 상세조회
+	function getPost(param,callback, error) {
+		console.log("게시글 상세조회: "+ param.post_num); 
+	
+		$.ajax({
+			type : 'get', 
+			url : "/team/" +param.team_num+ "/board/" +param.board_num+ "/post/" +param.post_num, //Controller 호출
+			contentType : "application/json; charset=utf-8",
+			success : function(result, status, xhr) { // Ajax 실행결과에 따라 Callback 함수 실행
+				if (callback) {
+					callback(result);
+				}
+			},
+			error : function(xhr, status, er) {
+				if (error) {
+					error(er);
+				}
+			}
+		});
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//게시판 생성
 	function insertBoard(board, param, callback, error) {
 		var team_num = param.team_num;
@@ -88,7 +117,7 @@ var listPost = (function() {
 	return {  //객체로 리턴 (변수에 함수를 넣음)
 		
 		getListPost : getListPost,
-		
+		getPost : getPost
 	};
 
 })(); //end listPost

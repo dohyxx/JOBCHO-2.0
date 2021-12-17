@@ -159,22 +159,14 @@
 	
 	
 	<!-- 게시글 시작 -->
-	
-	
-	<!-- /.col-lg-12 -->
-
-<!-- /.row -->
 	<div class="row" style="margin-top: 60px">
-	
-	
-	
-	
+
 	
 	<div>
+<!-- 게시글 끝  -->
 	
-	<!-- 게시글 끝  -->
 	
-	
+
 	
 	
 	
@@ -1332,28 +1324,36 @@ $(document).ready(function(){
 				showList(); //생성 후 다시 목록 갱신
 			});
 		});
-	
+		
+		//게시판 데이터 저장
+		var boardNum = "";
+		var boardName ="";
+		var boardInfo ="";
+		
 		//게시판 이름 클릭시 게시글 출력(비동기식 전환)
 		$("#board").on("click", "a", function(e){
 			
-			var board_num = $(this).attr("href");//클릭한 게시판 번호저장
+			//클릭한 게시판 번호저장
+			var board_num = $(this).attr("href");
+			boardNum = board_num
+			//기본 이벤트 삭제
 			e.preventDefault();
 			
-			//board.js- getListPost 메서드 호출
+			//post.js- getListPost 메서드 호출
 			listPost.getListPost({team_num:team_num, board_num:board_num}, function(map){ //map으로 리턴받는다.
 				
 				console.log("게시글 목록 callback: " +map.getListPost[0] );
+				boardName = map.board.board_name;
+				boardInfo = map.board.board_info;
 				var str ="";
 				var str1="";
 				
 				//게시글 기본틀 출력하는 부분
 				str1 = `<div class="row" style="margin-top: 60px">
 							<div class="col-sm-7" style="margin-left: 450px">
-							<h1 class="page-header">
-							`+map.board.board_name+`
-							</h1>
+							<h1 class="page-header">`+map.board.board_name+`</h1>
 							</div>
-						</div>
+							</div>
 						<div class="col-sm-7" style="margin-left: 450px">
 						  <div class="panel panel-default">
 						  <div class="panel-heading">`+map.board.board_info+`
@@ -1408,6 +1408,61 @@ $(document).ready(function(){
 				$("#post-list").html(str);
 			});
 		});
+		
+		
+		//게시글 상세조회
+		$(".row").on("click", "a", function(e){
+			
+			//클릭한 게시글 번호 저장
+			var post_num = $(this).attr("href");
+			console.log("리스트에서 상세조회로 전달: " +boardName);
+			
+			//기본 이벤트 삭제
+			e.preventDefault();
+			
+			//post.js- getPost 메서드 호출
+			listPost.getPost({team_num:team_num, board_num:boardNum, post_num:post_num}, function(post){
+				console.log("게시글 상세조회 callback: " +post.post_title );
+				var str ="";
+				
+				str = `	<div class="row" style="margin-top: 60px">
+					  		<div class="col-sm-7" style="margin-left: 450px">
+					   	 	<h1 class="page-header">`+boardName+`</h1>
+					  		</div>
+							</div>
+					     <div class="col-sm-7" style="margin-left: 450px">
+				   	 	<div class="panel panel-default">
+				      	<div class="panel-heading">`+boardInfo+` </div>
+				      	<div class="panel-body">
+				          <div class="form-group">
+				          <label>글 번호</label> <input class="form-control" name='post_num'
+				            value=`+post.post_num+` readonly="readonly">
+				        </div>
+				        <div class="form-group">
+				          <label>제목</label> 
+				          <textarea class="form-control" rows="1" name='post_title'
+					            readonly="readonly"> `+post.post_title+` </textarea>
+				        </div>
+				        <div class="form-group">
+				          <label>내용</label>
+				          <textarea class="form-control" rows="3" name='post_contents'
+				            readonly="readonly"> `+post.post_contents+` </textarea>
+				        </div>
+				        <div class="form-group">
+				          <label>작성자</label> <input class="form-control" name='writer'
+				            value= `+post.writer+` readonly="readonly">
+				        </div>
+							<button data-oper='modify' class="btn btn-info">수정</button>
+							<button data-oper='list' class="btn btn-default">목록</button>
+						</div>
+				    		</div>
+				  		</div>`+str;
+				  		
+				  		$(".row").html(str);
+			});
+		});
+		
+		
 		
 		
 		
