@@ -47,16 +47,16 @@ var listPost = (function() {
 	}
 	
 
-	//게시판 생성
+	//게시글 생성
 	function insertPost(post, param, callback, error) {
 		
-		//게시판 이름 작성 안했을 시
+		//게시글 이름 작성 안했을 시
 		if(!post.post_title){ 
 			alert("게시글 제목을 작성해주세요.");
 			return false;
 		}
 		
-		//게시판 정보 작성 안했을 시
+		//게시글 정보 작성 안했을 시
 		if(!post.post_contents){
 			alert("게시글 내용을 작성해주세요.");
 			return false;
@@ -105,11 +105,12 @@ var listPost = (function() {
 	
 
 	//게시글 삭제
-	function deleteBoard(param, callback, error) {
+	function deletePost(param, callback, error) {
 		
 		$.ajax({
 			type : 'delete',
-			url : '/team/' + param.team_num+'/board/' +param.board_num,
+			url : '/team/' + param.team_num+ '/board/' +param.board_num+ '/post/' +param.post_num,
+			contentType : "application/json; charset=utf-8",
 			success : function(deleteResult, status, xhr) {
 				if (callback) {
 					callback(deleteResult);
@@ -134,7 +135,8 @@ var listPost = (function() {
 		getListPost : getListPost,
 		getPost : getPost,
 		insertPost : insertPost,
-		updatePost : updatePost
+		updatePost : updatePost,
+		deletePost : deletePost
 	};
 
 })(); //end listPost

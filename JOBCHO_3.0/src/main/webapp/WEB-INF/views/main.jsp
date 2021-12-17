@@ -1893,6 +1893,91 @@ $(document).ready(function(){
 		
 		
 		
+		//수정폼에서 '삭제' 버튼을 클릭하면 delete 요청
+		$(".row").on("click", "button[data-oper='remove']", function(e){
+		
+			if(!confirm("게시글을 삭제하시겠습니까?")){
+	   			alert("취소되었습니다.");
+	   		 	return false;
+	   		}
+			else {alert("게시글이 삭제되었습니다.")};
+			
+			//post.js delete Ajax요청
+			listPost.deletePost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(result){	
+				
+				//post.js- getListPost 메서드 호출
+				listPost.getListPost({team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
+					
+					boardName = map.board.board_name;
+					boardInfo = map.board.board_info;
+					var str ="";
+					var str1="";
+					
+					//게시글 기본틀 출력하는 부분
+					str1 = `<div class="row" style="margin-top: 60px">
+								<div class="col-sm-7" style="margin-left: 450px">
+								<h1 class="page-header">`+map.board.board_name+`</h1>
+								</div>
+								</div>
+							<div class="col-sm-7" style="margin-left: 450px">
+							  <div class="panel panel-default">
+							  <div class="panel-heading">`+map.board.board_info+`
+							<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
+							</div>
+						<div class="panel-body">
+							<table class="table table-striped table-bordered table-hover">
+								<thead>
+									<tr>
+										<th>번호</th>
+										<th>제목</th>
+										<th>작성자</th>
+										<th>작성일</th>
+									</tr>
+								</thead>
+								<tbody id="post-list">
+								
+								</tbody>
+							</table>
+							<div class='row'>
+							<div class="col-sm-7">
+								<form id='searchForm' action="/post/list" method='get'>
+									<select name='type'>
+										<option value=""
+											<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
+										<option value="T"
+											<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
+										<option value="C"
+											<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
+										<option value="W"
+											<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
+									</select> 
+									<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
+									<button class='btn btn-default'>검색</button>
+								</form>
+							</div>
+						</div> 
+						</div>
+						</div>`+str1;
+					
+					//게시글 목록 출력하는 부분
+					for(var i = 0; i < map.getListPost.length; i++){
+					str = `<tr><td>`+map.getListPost[i].post_num+`</td>
+							<td>
+								<a class="move" href=`+map.getListPost[i].post_num+`> `+map.getListPost[i].post_title+`<b>[`+map.getListPost[i].replycnt+`]</b></a>	
+							</td>
+							<td>`+map.getListPost[i].writer+`</td>
+							<td>`+map.getListPost[i].post_date+`</td>
+							</tr>`+str;	
+					}
+					$(".row").html(str1);
+					$("#post-list").html(str);
+				});
+			});
+		}); //end delete
+		
+		
+		
+		
 		
 		
 		
