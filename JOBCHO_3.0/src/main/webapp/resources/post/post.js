@@ -5,12 +5,13 @@ var listPost = (function() {
 	
 
 	//게시글 전체 목록 가져오기
-	function getListPost(param,callback, error) {
-		console.log("게시글 목록 가져오기: "+ param.board_num); //21
+	function getListPost(cri,param,callback, error) {
+		console.log("게시글 목록 가져오기: "+ param.board_num); 
 	
 		$.ajax({
-			type : 'get', 
+			type : 'post', 
 			url : "/team/" +param.team_num+ "/board/" +param.board_num+ "/post", //Controller 호출
+			data : JSON.stringify(cri), //post객체 전달
 			contentType : "application/json; charset=utf-8",
 			success : function(result, status, xhr) { // Ajax 실행결과에 따라 Callback 함수 실행
 				if (callback) {

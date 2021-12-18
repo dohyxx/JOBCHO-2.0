@@ -32,10 +32,10 @@ public class PostServiceImpl implements PostService {
 	}
 
 	@Override
-	public List<PostVO> getListPost(int board_num) {
-		log.info("서비스 게시글 리스트: " + board_num);
+	public List<PostVO> getListPost(HashMap<String, Object> postMap) {
+		log.info("서비스 게시글 리스트: " + postMap);
 		
-		return mapper.getListPost(board_num);
+		return mapper.getListPost(postMap);
 	}
 	
 	@Override
@@ -60,10 +60,10 @@ public class PostServiceImpl implements PostService {
 
 	
 	@Override
-	public int getTotalCount(Criteria cri) {
+	public int getTotalCount(HashMap<String, Object> postMap) {
 		log.info("전체 게시글 수");
 		
-		return mapper.getTotalCount(cri);
+		return mapper.getTotalCount(postMap);
 	}
 
 	

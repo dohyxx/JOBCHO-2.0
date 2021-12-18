@@ -1,9 +1,9 @@
 package org.jobcho.controller;
 
 import java.util.HashMap;
-import java.util.List;
 
-import org.jobcho.domain.BoardVO;
+import org.jobcho.domain.Criteria;
+import org.jobcho.domain.PageInfo;
 import org.jobcho.domain.PostVO;
 import org.jobcho.service.BoardService;
 import org.jobcho.service.PostService;
@@ -60,15 +60,29 @@ public class PostController {
 	 * 게시글 리스트+ 페이지 처리(PostMan 확인O)
 	 * type, keyword (검색 시 필요)	 
 	 */
-	@GetMapping(value = "",
+	@PostMapping(value = "",
 							produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
-	public ResponseEntity<HashMap<Object, Object>> getListPost(@PathVariable("board_num") int board_num){
+	public ResponseEntity<HashMap<Object, Object>> getListPost( @PathVariable("board_num") int board_num,
+																											@RequestBody Criteria cri){
 		
-		HashMap<Object, Object> map = new HashMap<Object, Object>();//다중 파라미터 적용
-		map.put("getListPost", service.getListPost(board_num));
-		map.put("board", boardService.getBoard(board_num));
+		
+		
+		//다중 파라미터 적용
+		HashMap<String, Object> postMap = new HashMap<String, Object>();
+		postMap.put("board_num", board_num);
+		postMap.put("cri", cri);
+		
+		int total = service.getTotalCount(postMap);//게시글 전체 글 수
+		PageInfo page = new PageInfo(cri, total);
+		
+		//Map으로 view 전달 
+		HashMap<Object, Object> map = new HashMap<Object, Object>();
+		map.put("getListPost", service.getListPost(postMap)); //게시글 목록
+		map.put("board", boardService.getBoard(board_num)); //게시판 정보
+		map.put("pageMaker", page); //페이지 정보
 		
 		log.info("게시글 리스트 : " + map);
+		log.info("전체 게시글 수: " + total);
 	
 		return new ResponseEntity<>(map, HttpStatus.OK);
 	}

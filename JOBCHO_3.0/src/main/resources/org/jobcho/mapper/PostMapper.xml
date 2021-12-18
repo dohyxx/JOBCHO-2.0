@@ -4,7 +4,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.jobcho.mapper.PostMapper">
 
-	<resultMap type="org.jobcho.domain.PostVO" id="PostMember">
+	<!-- <resultMap type="org.jobcho.domain.PostVO" id="PostMember">
 		<result property="post_num" column="post_num"/>
 		<result property="post_title" column="post_title"/>
 		<result property="post_contents" column="post_contents"/>
@@ -20,18 +20,24 @@
 			<result property="member_num" column="member_num"/>
 			<result property="team_num" column="team_num"/>
 		</association>
-	</resultMap>
+	</resultMap> -->
 	
 	
 	<!-- 게시글 리스트 조회 -->
-	<select id="getListPost" parameterType="int" resultMap="PostMember">
+	<select id="getListPost" parameterType="hashMap" resultType="org.jobcho.domain.PostVO">
 		<![CDATA[ 
 				select *
-				from post p, board b 
-				where p.board_num = b.board_num
-				and p.board_num = #{board_num}
-				and p.islive =1
-
+				from(
+						select /*+INDEX_desc(post SYS_C007525) +*/
+							 rownum rn, post_num, post_title, post_contents, board_num, member_num, post_date, islive, replycnt,writer
+						from post
+						where	rownum <= #{cri.pageNum} * #{cri.amount}
+						and board_num = #{board_num}
+						and islive = 1 		 
+						)
+				where rn > (#{cri.pageNum} -1) * #{cri.amount}
+				and board_num = #{board_num}
+				and islive = 1
 		]]>	
 	</select>
 
@@ -71,11 +77,10 @@
 	
 	
 	<!-- 전체 게시글 수 -->
-	<select id="getTotalCount" resultType="int">
+	<select id="getTotalCount" parameterType="hashMap" resultType="int">
 		select count(*) from post 
-		where
-		
-		post_num > 0
+		where board_num = #{board_num}
+		and islive =1
 	</select>
 	
 	
