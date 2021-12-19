@@ -224,9 +224,6 @@ var replyRemoveBtn = $("#replyRemoveBtn");//삭제버튼
 var replyRegisterBtn = $("#replyRegisterBtn");//등록버튼
 
 
-
-
-
 	function getListReply(){
 	
 		console.log("댓글리스트 호출: " +postUL);

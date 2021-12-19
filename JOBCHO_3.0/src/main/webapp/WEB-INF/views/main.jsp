@@ -162,8 +162,11 @@
 	<div class="row" style="margin-top: 60px">
 
 	
-	<div>
+	</div>
 <!-- 게시글 끝  -->
+
+
+
 	
 	
 
@@ -877,13 +880,41 @@
 	</div>
 	<!--삭제된 오늘의 할일 모달 끝 -->
 	
+	  <!-------- 댓글 Modal --------->
+      <div class="modal fade" id="replyModal" tabindex="-1" role="dialog"
+        aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal"
+                aria-hidden="true">&times;</button>
+              <h4 class="modal-title" id="myModalLabel">댓글 작성</h4>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label>댓글 내용</label> 
+                <input class="form-control" name='reply_contents' value=''>
+              </div>      
+              <div class="form-group">
+                <label>작성자</label> 
+                <input class="form-control" type="text"  name='reply_writer' value=<sec:authentication property="principal.users.user_name"/> readonly="readonly">
+              </div>
+              <div class="form-group">
+                <label>작성 시간</label> 
+                <input class="form-control" name='replyDate' value='2018-01-01 13:13'>
+              </div>
+            </div>
+            
+			<div class="modal-footer">
+        		<button id='replyModBtn' type="button" class="btn btn-info">수정</button>
+        		<button id='replyRemoveBtn' type="button" class="btn btn-danger">삭제</button>
+        		<button id='replyRegisterBtn' type="button" class="btn btn-primary">등록</button>
+        		<button id='replyCloseBtn' type="button" class="btn btn-default">닫기</button>
+      		</div>
+		</div>
+	</div>
+</div>
 		
-		<!-- team,member, board, page 정보 유지 -->
-    	<form id='actionForm' action="/post/list" method='get'>
-				<input type='hidden' name='board_num' value='${pageMaker.cri.pageNum}'>
-				<input type='hidden' name='team_num' value='${param.team_num}'>
-				<input type='hidden' name='member_num' value='${param.member_num }'>
-		</form>
 		
 		
 		
@@ -904,6 +935,7 @@
 	<script src="/resources/chat/js/dragable.js"></script>
 	<script src="/resources/board/board.js?version=20211206"></script>
 	<script src="/resources/post/post.js?version=20211216"></script>
+	<script src="/resources/board/reply.js?version=20211217"></script>
 	<script src="/resources/members/js/vote.js"></script>
 	<script src="/resources/members/js/memberProfile.js"></script>
 	<!-- 외부js에 변수 전달 -->
@@ -1247,6 +1279,7 @@ $(document).ready(function(){
 	var team_num =$("#teamNum").val();
 	var boardUL = $("#board"); //게시판 리스트 들어가는 부분
 	var user_num = $("#userNum").val();
+	var replyUL =$(".chat");
 	
 	console.log("유저번호: " + user_num)
 	
@@ -1332,6 +1365,29 @@ $(document).ready(function(){
 		var pageNum = "";
 		var postNum = "";
 		
+		//---------댓글 리스트 불러오기---------
+		function getListReply(){
+			console.log("댓글리스트 호출~");
+
+			replyService.getListReply({pno:postNum}, function(list){ //reply.js 호출
+				var str ="";
+		
+				//댓글이 없을 경우
+				if(list == null || list.length == 0){
+					replyUL.html("");
+					return;
+				}
+				for (var i = 0, len = list.length || 0; i < len; i++) {
+			           str +="<li class='left clearfix' data-reply_num='"+list[i].reply_num+"'>";
+			           str +="  <div><div class='header'><strong class='primary-font'>"+list[i].reply_writer+"</strong>"; 
+			           str +="    <small class='pull-right text-muted'>"+replyService.replyTime(list[i].reply_date)+"</small></div>";
+			           str +="    <p>"+list[i].reply_contents+"</p></div></li>";
+			         }
+				replyUL.html(str);
+			});
+		}//end getListReply
+	
+		
 		//게시판 이름 클릭시 게시글 출력(비동기식 전환)
 		$("#board").on("click", "a", function(e){
 			
@@ -1349,7 +1405,7 @@ $(document).ready(function(){
 			//post.js- getListPost 메서드 호출
 			listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
 				
-				console.log("게시글 목록 callback!!: " +map.getListPost[0].post_num );
+				console.log("게시글 목록 callback!!: " +map.pageMaker.total );
 				boardName = map.board.board_name;
 				boardInfo = map.board.board_info;
 				var str ="";
@@ -1408,15 +1464,17 @@ $(document).ready(function(){
 					</div>`+str1;
 				
 				//게시글 목록 출력하는 부분
-				for(var i = 0; i < map.getListPost.length; i++){
-					str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-					str +="<td>";
-					str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-					str +="</td>";
-					str +="<td>"+map.getListPost[i].writer+"</td>";
-					str +="<td>"+map.getListPost[i].post_date+"</td>";
-					str +="</tr>";	
+				if(!map.pageMaker.total == 0){ //게시판에 게시글이 존재하지 않으면 실행하지 않는다.
+					for(var i = 0; i < map.getListPost.length; i++){
+						str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
+						str +="<td>";
+						str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
+						str +="</td>";
+						str +="<td>"+map.getListPost[i].writer+"</td>";
+						str +="<td>"+map.getListPost[i].post_date+"</td>";
+						str +="</tr>";	
 					}
+				}
 				
 				//게시글 페이지 처리
 				var prev = map.pageMaker.startPage -1;
@@ -1585,7 +1643,6 @@ $(document).ready(function(){
 			postNum = $(this).attr("href");
 			console.log("리스트에서 상세조회로 전달: " +boardName);
 			
-			
 			//기본 이벤트 삭제
 			e.preventDefault();
 			
@@ -1623,12 +1680,31 @@ $(document).ready(function(){
 				        </div>
 							<button data-oper='modify' class="btn btn-info">수정</button>
 							<button data-oper='list' class="btn btn-default">목록</button>
+							<br><br><br><br>
+							<div class='row'>
+							<div class="col-lg-12">
+							<div class="panel panel-default">
+							<div class="panel-heading">
+							<i class="fa fa-comments fa-fw"></i> 댓글
+							<button id='addReplyBtn' class='btn btn-primary btn-xs pull-right'>댓글 쓰기</button>
+							</div>      
+							<div class="panel-body">
+							       <ul class="chat">
+							       
+							      </ul>
+							</div>
+							<div class="panel-footer"></div>
+							</div>
+							</div>
+							</div>
 						</div>
 				    		</div>
 				  		</div>`+str;
 				  		
 				  		$(".row").html(str);
 			});
+			//댓글 리스트 호출
+	  		getListReply();
 		}); // end getPost
 		
 			
@@ -2354,10 +2430,132 @@ $(document).ready(function(){
 		
 		
 		
+		//-------게시글 댓글 스크립트--------
+		var replyModal = $("#replyModal");
+		var modalInputReply = replyModal.find("input[name='reply_contents']");
+		var modalInputReplyer = replyModal.find("input[name='reply_writer']");
+		var modalInputReplyDate = replyModal.find("input[name='replyDate']");
+
+		var replyModBtn = $("#replyModBtn"); //수정버튼
+		var replyRemoveBtn = $("#replyRemoveBtn");//삭제버튼
+		var replyRegisterBtn = $("#replyRegisterBtn");//등록버튼
 		
 		
+		//댓글 모달 닫기 버튼
+		$("#replyCloseBtn").on("click", function(e){
+			replyModal.modal('hide');	
+		});
+
+		//댓글 등록 버튼 클릭 시 모달 show
+		$(".row").on("click", "#addReplyBtn", function(e){
+			console.log("댓글 생성 모달창");
+			
+			modalInputReplyDate.closest("div").hide();
+			replyModal.find("button[id !='replyCloseBtn']").hide();
+			replyModal.find("input[name !='reply_writer']").val(""); //입력항목 비우고 
+			
+			replyRegisterBtn.show();
+			
+			replyModal.modal("show");
+			getListReply();
+		});
 		
 		
+		//댓글 입력한 데이터 등록
+		replyRegisterBtn.on("click", function(e){
+			console.log("댓글 등록");
+			var reply = {
+					reply_contents: modalInputReply.val(),
+					member_num: member_num,
+					post_num: postNum,
+					reply_writer : modalInputReplyer.val()
+			};
+			
+			replyService.insertReply(reply, function(result){ //reply.js 호출
+				
+				alert("댓글이 등록되었습니다.");
+				replyModal.find("input").val(""); //입력항목 비우고 
+				replyModal.modal("hide");	//모달창 닫기
+				getListReply(); //댓글등록 후 목록 갱신 
+				});
+			}); 
+		
+		
+		//동적으로 생성된 댓글 이벤트 위임, 특정댓글 보기
+		$(".chat").on("click", "li", function(){
+			
+			var reply_num = $(this).data("reply_num");
+			console.log(reply_num);
+			
+			//reply.js 호출
+			replyService.getReply(reply_num, function(reply){  //callback함수
+				
+				var reply_writer = reply.reply_writer; //유저,댓글 작성자 비교
+				
+				modalInputReply.val(reply.reply_contents);
+				modalInputReplyer.val(reply.reply_writer);
+				modalInputReplyDate.val(replyService.replyTime(reply.reply_date)).attr("readonly", "readonly");
+				replyModal.data("reply_num", reply.reply_num);
+				
+				replyModal.find("button[id != 'replyCloseBtn']").hide();
+				
+				console.log("댓글 작성자 비교: " + reply_writer );
+				console.log("유저  비교: " + user_name );
+				
+				replyModBtn.show(); //수정버튼 활성화 
+				replyRemoveBtn.show();//삭제버튼 활성화
+				
+				//로그인한 유저와 댓글 작성자가 같으면 모달 보여주기
+				if(reply_writer == user_name){
+				replyModal.modal("show");
+				}
+			});
+		});
+		
+
+		//댓글 삭제 
+	   	replyRemoveBtn.on("click", function (e){
+	   		
+	   		if(!confirm("정말로 삭제하시겠습니까?")){
+	   			alert("취소되었습니다.")
+	   			replyModal.modal("hide");
+	   		}
+	   	  var reply_num = replyModal.data("reply_num");
+	   	  	
+	   		//reply.js 호출
+	   	 	 replyService.deleteReply(reply_num, function(result){
+	   		  
+	   	    alert("댓글이 삭제되었습니다.");
+	   	   	replyModal.modal("hide");
+	   	   	
+	   	 	getListReply(); //댓글 삭제 후 댓글목록 갱신
+	   	 	
+	   	 	console.log("댓글 삭제~");
+	   	  });
+	 });
+		
+		//특정 댓글 수정
+		replyModBtn.on("click", function(){
+			
+			var reply = {reply_num: replyModal.data("reply_num"), reply_contents: modalInputReply.val() };
+			console.log("댓글 수정내용: "+modalInputReply.val());
+				
+				//reply.js 호출
+				replyService.updateReply(reply, function(result){
+				
+				if(!confirm("정말로 수정하시겠습니까?")){
+		   			alert("댓글이 수정되었습니다.")
+		   			replyModal.modal("hide");
+		   		}
+			 	
+				alert("댓글이 수정되었습니다.");
+				replyModal.modal("hide");
+				
+				getListReply(); //댓글 수정 후 댓글목록 갱신
+				console.log("댓글 수정~");
+			});
+		});
+
 		
 		
 		
@@ -2532,6 +2730,8 @@ overflow-y : scroll;
 height : 400px;
 overflow-y : scroll;
 }
+
+
 
 </style>
 

@@ -27,10 +27,8 @@ var replyService = (function() {
 	
 	//특정 게시글 댓글 리스트 불러오기
 	function getListReply(param, callback, error) {
-
-	    var post_num = param.pno;
 	    
-	    $.getJSON("/reply/post/" + post_num +".json", //Restcontroller 호출
+	    $.getJSON("/reply/post/" + param.pno +".json", //Restcontroller 호출
 	        function(data) {
 	    	
 	          if (callback) {
