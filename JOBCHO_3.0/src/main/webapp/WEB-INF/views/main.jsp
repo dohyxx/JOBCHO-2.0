@@ -1623,6 +1623,7 @@ $(document).ready(function(){
 			listPost.getPost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(post){
 				console.log("게시글 상세조회 callback: " +post.post_title );
 				var str ="";
+				var str5 ="";
 				
 				str = `	<div class="row" style="margin-top: 60px">
 					  		<div class="col-sm-7" style="margin-left: 450px">
@@ -1651,8 +1652,9 @@ $(document).ready(function(){
 				          <label>작성자</label> <input class="form-control" name='writer'
 				            value= `+post.writer+` readonly="readonly">
 				        </div>
-							<button data-oper='modify' class="btn btn-info">수정</button>
-							<button data-oper='list' class="btn btn-default">목록</button>
+							<div id='modify'>
+							
+							</div>
 							<br><br><br><br>
 							<div class='row'>
 							<div class="col-lg-12">
@@ -1674,8 +1676,16 @@ $(document).ready(function(){
 				    		</div>
 				  		</div>`+str;
 				  		
+				  		if(user_name == post.writer){
+				  			str5 = `<button data-oper='modify' class="btn btn-info">수정</button>
+				  						<button data-oper='list' class="btn btn-default">목록</button>`+str5;
+				  						console.log("이름이 같으니까 수정버튼 보여주기!");
+				  		}else{
+				  			str5 =`<button data-oper='list' class="btn btn-default">목록</button>`
+				  		}
+				  		
 				  		$(".row").html(str);
-				  
+				  		$("#modify").html(str5);
 				  		getListReply();	//댓글 리스트 호출
 			});
 		}); // end getPost
@@ -1685,7 +1695,7 @@ $(document).ready(function(){
 
 			replyService.getListReply({pno:postNum}, function(list){ //reply.js 호출
 				var str ="";
-				console.log("댓글리스트 호출~" + list[0].reply_contents);
+				console.log("댓글리스트 호출~");
 				//댓글이 없을 경우
 				if(list == null || list.length == 0){
 					$(".chat").html("");
