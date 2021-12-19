@@ -77,7 +77,7 @@
             
                 <!--프로필-->
                 <div >
-                    <div class="nav-profile-image-left" style="background-image: url('/resources/board/apple.png')"></div>
+                    <div class="nav-profile-image-left" style="background-image: url('/resources/board/gunsoo.png')"></div>
                     <div class="nav-profile-content-left" style="cursor:pointer">
                        	<h1><sec:authentication property="principal.users.user_name"/></h1>
                         <h3><sec:authentication property="principal.users.user_email"/></h3>

@@ -101,7 +101,7 @@
 
 				<!--프로필-->
 				<div>
-					<div class="nav-profile-image-left" style="background-image: url('/resources/board/apple.png')"
+					<div class="nav-profile-image-left" style="background-image: url('/resources/board/gunsoo.png')"
 						></div>
 					<div class="nav-profile-content-left">
 						<p>${team.team_name }</p>
@@ -1298,8 +1298,7 @@ $(document).ready(function(){
 			boardUL.html(str); 
 		});
 	}
-
-
+	
 //==========Modal==========
 	//모달창에 입력한 데이터 값 저장
     var boardModal = $("#boardModal");
@@ -1649,7 +1648,7 @@ $(document).ready(function(){
 		//상세조회에서 목록버튼 클릭 시 다시 리스트로 돌아간다.
 		$(".row").on("click", "button[data-oper='list']", function(e){
 			
-			//페이지 정보
+			//페이지 번호를 클릭하지 않은채 목록으로 갈때 오류해결
 			if(!pageNum){
 				var cri = {pageNum:1, amount: 10};
 				console.log("페이지번호 없음");
@@ -1664,37 +1663,38 @@ $(document).ready(function(){
 		
 		// '글쓰기' 버튼 클릭 시 작성폼 띄우기
 		$(".row").on("click", "#regBtn", function(e){
-			
+			var str="";
 			console.log("글쓰기 버튼 클릭");
 			
-		 	var str = `<div class="row" style="margin-top: 60px">
-							<div class="col-sm-7" style="margin-left: 450px">
+			 		str = `<div class="row" style="margin-top: 60px">
+							<div class="col-sm-7" style="margin-left: 450px">	
 							<h1 class="page-header">`+boardName+`</h1>
 							</div>
 							</div>
 							<div class="col-sm-7" style="margin-left: 450px">
-		 		    			<div class="panel panel-default">
-		 		    			<div class="panel-heading">`+boardInfo+`</div>
-		 		      		<div class="panel-body">
-		           				<div class="form-group">
-		             			<label>제목</label> <input class="form-control" id="form-control1" name='post_title'>
-		           				</div>
-		           				<div class="form-group">
-		             			<label>내용</label>
-		             			<textarea class="form-control" id="form-control2" rows="7" name='post_contents'></textarea>
-		           				</div>
-		           				<div class="form-group">
-		             			<label>작성자</label> <input class="form-control" id="form-control3" type="text" name='writer' value=<sec:authentication property="principal.users.user_name"/> readonly="readonly">
-		           				</div>
-		           				<button id='submit' class="btn btn-primary">등록</button>
-		           				<button id='reset' type="reset" class="btn btn-default">취소</button>
-		       				</div>
-		     				</div>
-		   					</div>`+str;
+		    				<div class="panel panel-default">
+		    				<div class="panel-heading">`+boardInfo+`</div>
+		      				<div class="panel-body">
+       						<div class="form-group">
+         					<label>제목</label> <input class="form-control" id="form-control1" name='post_title'>
+       						</div>
+       						<div class="form-group">
+         					<label>내용</label>
+         					<textarea class="form-control" id="form-control2" rows="7" name='post_contents'></textarea>
+       						</div>
+       						<div class="form-group">
+         					<label>작성자</label> <input class="form-control" id="form-control3" type="text" name='writer' value= <sec:authentication property="principal.users.user_name"/> readonly="readonly">
+       						</div>
+       						<button id='submit' class="btn btn-primary">등록</button>
+       						<button id='reset' type="reset" class="btn btn-default">취소</button>
+ 							</div>
+ 							</div>
+							</div>`+str;
+					
+					$(".row").html(str);
 		 					
-		 					$(".row").html(str);
 		 					
-					});
+		 	});
 		
 		
 		// 게시글 생성. 작성한 폼 Ajax요청
@@ -1736,14 +1736,18 @@ $(document).ready(function(){
 		$(".row").on("click", "#reset", function(e){
 				console.log("글쓰기에서 다시 리스트로");
 			
-			//페이지 정보
-			var cri = {pageNum:pageNum, amount: 10};
+			//페이지 번호를 클릭하지 않은채 목록으로 갈때 오류해결
+			if(!pageNum){
+				var cri = {pageNum:1, amount: 10};
+				console.log("페이지번호 없음");
+			}else{
+				var cri = {pageNum:pageNum, amount: 10};				
+			}	
 			
 			//게시글 목록 불어오기
 			getListPost(cri);
 			
 		}); //end 글쓰기에서 리스트
-		
 		
 		
 		// 상세조회에서 수정버튼 클릭 시 수정폼으로 이동
@@ -1819,8 +1823,13 @@ $(document).ready(function(){
 				
 				console.log("게시글 수정 callback");
 				
-				//페이지 정보
-				var cri = { pageNum:pageNum,amount: 10};
+				//페이지 번호를 클릭하지 않은채 목록으로 갈때 오류해결
+				if(!pageNum){
+					var cri = {pageNum:1, amount: 10};
+					console.log("페이지번호 없음");
+				}else{
+					var cri = {pageNum:pageNum, amount: 10};				
+				}	
 				
 				//게시글 목록불러오기
 				getListPost(cri);
@@ -1842,8 +1851,13 @@ $(document).ready(function(){
 			//post.js delete Ajax요청
 			listPost.deletePost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(result){	
 				
-				//페이지 정보
-				var cri = {pageNum:pageNum, amount: 10};
+				//페이지 번호를 클릭하지 않은채 목록으로 갈때 오류해결
+				if(!pageNum){
+					var cri = {pageNum:1, amount: 10};
+					console.log("페이지번호 없음");
+				}else{
+					var cri = {pageNum:pageNum, amount: 10};				
+				}	
 				
 				//게시글 목록불러오기
 				getListPost(cri);
@@ -1874,7 +1888,7 @@ $(document).ready(function(){
 			modalInputReplyDate.closest("div").hide();
 			replyModal.find("button[id !='replyCloseBtn']").hide();
 			replyModal.find("input[name !='reply_writer']").val(""); //입력항목 비우고 
-			
+			replyModal.find("input[name ='reply_writer']").val(user_name);
 			replyRegisterBtn.show();
 			
 			replyModal.modal("show");
@@ -1899,6 +1913,7 @@ $(document).ready(function(){
 				getListReply(); //댓글등록 후 목록 갱신 
 				});
 			}); 
+		
 		
 		//동적으로 생성된 댓글 이벤트 위임, 특정댓글 보기
 		$(".row").on("click", "#replyUpdate", function(){
