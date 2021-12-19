@@ -1354,26 +1354,14 @@ $(document).ready(function(){
 		});
 		
 		//======게시판 데이터 저장=======
-		var boardNum = "";
-		var boardName ="";
-		var boardInfo ="";
+		var boardNum = ""; //ok
+		var boardName =""; //ok
+		var boardInfo =""; //ok
 		var pageNum = "";
 		var postNum = "";
-	
 		
-		//게시판 이름 클릭시 게시글 출력(비동기식 전환)
-		$("#board").on("click", "a", function(e){
-			
-			//클릭한 게시판 번호저장
-			boardNum = $(this).attr("href");
-			
-			//기본 이벤트 삭제
-			e.preventDefault();
-			
-			//페이지 정보
-			var cri = {
-					
-			};
+		//게시글 목록 메서드
+		function getListPost(cri){
 			
 			//post.js- getListPost 메서드 호출
 			listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
@@ -1412,20 +1400,14 @@ $(document).ready(function(){
 						</table>
 						<div class='row'>
 						<div class="col-sm-7">
-							<form id='searchForm' action="/post/list" method='get'>
-								<select name='type'>
-									<option value=""
-										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-									<option value="T"
-										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-									<option value="C"
-										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-									<option value="W"
-										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
+								<select name='type' id='type'>
+									<option value=''>--</option>
+									<option value='T'>제목</option>
+									<option value='C'>내용</option>
+									<option value='W'>작성자</option>
 								</select> 
-								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-								<button class='btn btn-default'>검색</button>
-							</form>
+								<input type='text' id='keyword' value="" />
+								<button class='btn btn-default' id='search'>검색</button>
 					</div>
 						<div class='pull-right' style="margin-right: 20px">
 						<ul class="pagination" id="page">
@@ -1478,11 +1460,63 @@ $(document).ready(function(){
 					console.log("next if문 실행: "+ next);
 				}
 				
-				
 				$(".row").html(str1);
 				$("#post-list").html(str);
 				$("#page").html(str4);
 			});
+			
+		} //end getListPost 
+		
+		
+		
+		//게시판 이름 클릭시 게시글 출력(비동기식 전환)
+		$("#board").on("click", "a", function(e){
+			
+			//클릭한 게시판 번호저장
+			boardNum = $(this).attr("href");
+			
+			//기본 이벤트 삭제
+			e.preventDefault();
+			
+			//페이지 정보
+			var cri = {};
+			
+			//게시글 목록 불러오기
+			getListPost(cri);
+		});
+		
+		
+		// 검색 시 해당 키워드와 타입으로 리스트를 불러온다.
+		$(".row").on("click", "#search", function(e){
+				
+			var name = document.getElementById('type'); 
+			var type = name.options[name.selectedIndex].value; //option type 저장
+			var keyword = document.getElementById('keyword').value; //input keyword 저장
+			
+    		console.log('선택된 옵션 value 값=' + type);
+    		console.log('선택된 옵션 keyword 값=' + keyword);
+    		
+    		//검색종류 선택안하고 검색버튼 클릭 시
+    		if(!type){
+    			alert("검색 종류를 선택해주세요!");
+    			console.log("검색 종류 입력X");
+    			return false;
+    		}
+    		
+    		//키워드 선택안하고 검색버튼 클릭 시
+    		if(!keyword){
+    			alert("키워드를 입력해주세요!");
+    			console.log("키워드 입력X");
+    			return false;
+    		}
+    		
+    		var cri = {
+    				type: type,
+    				keyword: keyword
+    		}
+    		
+    		//게시글 목록 불러오기
+    		getListPost(cri);
 		});
 		
 		
@@ -1501,112 +1535,11 @@ $(document).ready(function(){
 				amount: 10
 			};
 			
-			//post.js- getListPost 메서드 호출
-			listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
-				
-				console.log("게시글 목록 callback!!: " +map.getListPost[0].post_num );
-				boardName = map.board.board_name;
-				boardInfo = map.board.board_info;
-				var str ="";
-				var str1="";
-				var str4="";
-				
-				//게시글 기본틀 출력하는 부분
-				str1 = `<div class="row" style="margin-top: 60px">
-							<div class="col-sm-7" style="margin-left: 450px">
-							<h1 class="page-header">`+map.board.board_name+`</h1>
-							</div>
-							</div>
-						<div class="col-sm-7" style="margin-left: 450px">
-						  <div class="panel panel-default">
-						  <div class="panel-heading">`+map.board.board_info+`
-						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
-						</div>
-					<div class="panel-body">
-						<table class="table table-striped table-bordered table-hover">
-							<thead>
-								<tr>
-									<th>번호</th>
-									<th>제목</th>
-									<th>작성자</th>
-									<th>작성일</th>
-								</tr>
-							</thead>
-							<tbody id="post-list">
-							
-							</tbody>
-						</table>
-						<div class='row'>
-						<div class="col-sm-7">
-							<form id='searchForm' action="/post/list" method='get'>
-								<select name='type'>
-									<option value=""
-										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-									<option value="T"
-										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-									<option value="C"
-										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-									<option value="W"
-										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-								</select> 
-								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-								<button class='btn btn-default'>검색</button>
-							</form>
-					</div>
-						<div class='pull-right' style="margin-right: 20px">
-						<ul class="pagination" id="page">
+			//게시글 목록 불러오기
+			getListPost(cri);
 			
-						</ul>
-						</div> 
-					</div>
-					</div>
-					</div>`+str1;
-				
-				//게시글 목록 출력하는 부분
-				for(var i = 0; i < map.getListPost.length; i++){
-					str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-					str +="<td>";
-					str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-					str +="</td>";
-					str +="<td>"+map.getListPost[i].writer+"</td>";
-					str +="<td>"+map.getListPost[i].post_date+"</td>";
-					str +="</tr>";	
-				}
-				
-				//게시글 페이지 처리
-				var prev = map.pageMaker.startPage -1;
-				var next = map.pageMaker.endPage +1;
-				
-				if(map.pageMaker.prev){
-					str4 = `<li class="paginate_button previous"><a href=`+prev+`>이전</a></li>`+str4;
-					console.log("prev if문 실행: "+ str4);
-				}
-				
-				//클릭한 페이지 번호 표시하기	
-				for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
-		
-					if(map.pageMaker.cri.pageNum == num){
-						console.log("페이지 번호 표시~");
-						str4 += "<li class='paginate_button active'>"; 
-						str4 +=	"<a href='"+num+"''>"+num+"</a>";
-			   			str4 +="</li>";
-					}else{
-						str4 += "<li class='paginate_button'>"; 
-						str4 +=	"<a href='"+num+"''>"+num+"</a>";
-			   			str4 +="</li>";
-					}
-				}
-				
-				if(map.pageMaker.next){
-					str4 += "<li class='paginate_button next'><a href='"+next+"'>이후</a></li>";
-					console.log("next if문 실행: "+ next);
-				}
-				
-				$(".row").html(str1);
-				$("#post-list").html(str);
-				$("#page").html(str4);
-			});
 		});
+		
 		
 		
 		//게시글 상세조회
@@ -1690,6 +1623,7 @@ $(document).ready(function(){
 			});
 		}); // end getPost
 		
+		
 		//---------댓글 리스트 불러오기---------
 		function getListReply(){
 
@@ -1716,115 +1650,10 @@ $(document).ready(function(){
 		$(".row").on("click", "button[data-oper='list']", function(e){
 			
 			//페이지 정보
-			var cri = {
-					pageNum:pageNum,
-					amount: 10
-			};
-			//post.js- getListPost 메서드 호출
-			listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
-				
-				console.log("게시글 목록 callback: " +map.getListPost[0] );
-				boardName = map.board.board_name;
-				boardInfo = map.board.board_info;
-				var str ="";
-				var str1="";
-				var str4="";
-				
-				//게시글 기본틀 출력하는 부분
-				str1 = `<div class="row" style="margin-top: 60px">
-							<div class="col-sm-7" style="margin-left: 450px">
-							<h1 class="page-header">`+map.board.board_name+`</h1>
-							</div>
-							</div>
-						<div class="col-sm-7" style="margin-left: 450px">
-						  <div class="panel panel-default">
-						  <div class="panel-heading">`+map.board.board_info+`
-						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
-						</div>
-					<div class="panel-body">
-						<table class="table table-striped table-bordered table-hover">
-							<thead>
-								<tr>
-									<th>번호</th>
-									<th>제목</th>
-									<th>작성자</th>
-									<th>작성일</th>
-								</tr>
-							</thead>
-							<tbody id="post-list">
-							
-							</tbody>
-						</table>
-						<div class='row'>
-						<div class="col-sm-7">
-							<form id='searchForm' action="/post/list" method='get'>
-								<select name='type'>
-									<option value=""
-										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-									<option value="T"
-										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-									<option value="C"
-										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-									<option value="W"
-										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-								</select> 
-								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-								<button class='btn btn-default'>검색</button>
-							</form>
-						</div>
-						<div class='pull-right' style="margin-right: 20px">
-						<ul class="pagination" id="page">
+			var cri = {pageNum:pageNum, amount: 10};
 			
-						</ul>
-						</div> 
-					</div> 
-					</div>
-					</div>`+str1;
-				
-				//게시글 목록 출력하는 부분
-				for(var i = 0; i < map.getListPost.length; i++){
-					str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-					str +="<td>";
-					str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-					str +="</td>";
-					str +="<td>"+map.getListPost[i].writer+"</td>";
-					str +="<td>"+map.getListPost[i].post_date+"</td>";
-					str +="</tr>";	
-					}
-				
-				//게시글 페이지 처리
-				var prev = map.pageMaker.startPage -1;
-				var next = map.pageMaker.endPage +1;
-				
-				if(map.pageMaker.prev){
-					str4 = `<li class="paginate_button previous"><a href=`+prev+`>이전</a></li>`+str4;
-					console.log("prev if문 실행: "+ str4);
-				}
-				
-				//클릭한 페이지 번호 표시하기	
-				for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
-		
-					if(map.pageMaker.cri.pageNum == num){
-						console.log("페이지 번호 표시~");
-						str4 += "<li class='paginate_button active'>"; 
-						str4 +=	"<a href='"+num+"''>"+num+"</a>";
-			   			str4 +="</li>";
-					}else{
-						str4 += "<li class='paginate_button'>"; 
-						str4 +=	"<a href='"+num+"''>"+num+"</a>";
-			   			str4 +="</li>";
-					}
-				}
-				
-				if(map.pageMaker.next){
-					str4 += "<li class='paginate_button next'><a href='"+next+"'>이후</a></li>";
-					console.log("next if문 실행: "+ next);
-				}
-				
-				$(".row").html(str1);
-				$("#post-list").html(str);
-				$("#page").html(str4);
-			});
+			//게시글 목록 불러오기
+			getListPost(cri);
 		});
 		
 		
@@ -1882,121 +1711,17 @@ $(document).ready(function(){
 			//post.js-insertPost 호출
 			listPost.insertPost(post, {team_num:team_num, board_num:boardNum}, function(result){
 				console.log("게시글 생성 callback" + result);
+				
 				if(result == "success"){
 					alert("게시글이 등록되었습니다.");
 				}
 				
 				//페이지 정보
-				var cri = {
-						pageNum:1,
-						amount: 10
-				};
-				//게시글 등록 후 목록 갱신
-				listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
-					
-					console.log("게시글 목록 callback: " +map.getListPost[0] );
-					boardName = map.board.board_name;
-					boardInfo = map.board.board_info;
-					var str ="";
-					var str1="";
-					var str4="";
-					
-					//게시글 기본틀 출력하는 부분
-					str1 = `<div class="row" style="margin-top: 60px">
-								<div class="col-sm-7" style="margin-left: 450px">
-								<h1 class="page-header">`+map.board.board_name+`</h1>
-								</div>
-								</div>
-							<div class="col-sm-7" style="margin-left: 450px">
-							  <div class="panel panel-default">
-							  <div class="panel-heading">`+map.board.board_info+`
-							<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
-							</div>
-						<div class="panel-body">
-							<table class="table table-striped table-bordered table-hover">
-								<thead>
-									<tr>
-										<th>번호</th>
-										<th>제목</th>
-										<th>작성자</th>
-										<th>작성일</th>
-									</tr>
-								</thead>
-								<tbody id="post-list">
-								
-								</tbody>
-							</table>
-							<div class='row'>
-							<div class="col-sm-7">
-								<form id='searchForm' action="/post/list" method='get'>
-									<select name='type'>
-										<option value=""
-											<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-										<option value="T"
-											<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-										<option value="C"
-											<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-										<option value="W"
-											<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-									</select> 
-									<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-									<button class='btn btn-default'>검색</button>
-								</form>
-							</div>
-							<div class='pull-right' style="margin-right: 20px">
-							<ul class="pagination" id="page">
+				var cri = {pageNum:1, amount: 10};
 				
-							</ul>
-							</div> 
-						</div> 
-						</div>
-						</div>`+str1;
-					
-					//게시글 목록 출력하는 부분
-					for(var i = 0; i < map.getListPost.length; i++){
-						str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-						str +="<td>";
-						str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-						str +="</td>";
-						str +="<td>"+map.getListPost[i].writer+"</td>";
-						str +="<td>"+map.getListPost[i].post_date+"</td>";
-						str +="</tr>";	
-						}
-					
-					//게시글 페이지 처리
-					var prev = map.pageMaker.startPage -1;
-					var next = map.pageMaker.endPage +1;
-					
-					if(map.pageMaker.prev){
-						str4 = `<li class="paginate_button previous"><a href=`+prev+`>이전</a></li>`+str4;
-						console.log("prev if문 실행: "+ str4);
-					}
+				//게시글 목록 불어오기
+				getListPost(cri);
 				
-					//클릭한 페이지 번호 표시하기	
-					for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
-			
-						if(map.pageMaker.cri.pageNum == num){
-							console.log("페이지 번호 표시~");
-							str4 += "<li class='paginate_button active'>"; 
-							str4 +=	"<a href='"+num+"''>"+num+"</a>";
-				   			str4 +="</li>";
-						}else{
-							str4 += "<li class='paginate_button'>"; 
-							str4 +=	"<a href='"+num+"''>"+num+"</a>";
-				   			str4 +="</li>";
-						}
-					}
-					
-					if(map.pageMaker.next){
-						str4 += "<li class='paginate_button next'><a href='"+next+"'>이후</a></li>";
-						console.log("next if문 실행: "+ next);
-					}
-					
-					$(".row").html(str1);
-					$("#post-list").html(str);
-					$("#page").html(str4);
-					
-				});// end getListPost
 			}); // end insertPost
 		}); // end event
 		
@@ -2007,114 +1732,11 @@ $(document).ready(function(){
 				console.log("글쓰기에서 다시 리스트로");
 			
 			//페이지 정보
-			var cri = {
-					pageNum:pageNum,
-					amount: 10
-			};
-			//post.js- getListPost 메서드 호출
-			listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
-				
-				boardName = map.board.board_name;
-				boardInfo = map.board.board_info;
-				var str ="";
-				var str1="";
-				var str4="";
-				
-				//게시글 기본틀 출력하는 부분
-				str1 = `<div class="row" style="margin-top: 60px">
-							<div class="col-sm-7" style="margin-left: 450px">
-							<h1 class="page-header">`+map.board.board_name+`</h1>
-							</div>
-							</div>
-						<div class="col-sm-7" style="margin-left: 450px">
-						  <div class="panel panel-default">
-						  <div class="panel-heading">`+map.board.board_info+`
-						<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
-						</div>
-					<div class="panel-body">
-						<table class="table table-striped table-bordered table-hover">
-							<thead>
-								<tr>
-									<th>번호</th>
-									<th>제목</th>
-									<th>작성자</th>
-									<th>작성일</th>
-								</tr>
-							</thead>
-							<tbody id="post-list">
-							
-							</tbody>
-						</table>
-						<div class='row'>
-						<div class="col-sm-7">
-							<form id='searchForm' action="/post/list" method='get'>
-								<select name='type'>
-									<option value=""
-										<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-									<option value="T"
-										<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-									<option value="C"
-										<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-									<option value="W"
-										<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-								</select> 
-								<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-								<button class='btn btn-default'>검색</button>
-							</form>
-						</div>
-						<div class='pull-right' style="margin-right: 20px">
-						<ul class="pagination" id="page">
+			var cri = {pageNum:pageNum, amount: 10};
 			
-						</ul>
-						</div> 
-					</div> 
-					</div>
-					</div>`+str1;
-				
-				//게시글 목록 출력하는 부분
-				for(var i = 0; i < map.getListPost.length; i++){
-					str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-					str +="<td>";
-					str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-					str +="</td>";
-					str +="<td>"+map.getListPost[i].writer+"</td>";
-					str +="<td>"+map.getListPost[i].post_date+"</td>";
-					str +="</tr>";	
-					}
-				
-				//게시글 페이지 처리
-				var prev = map.pageMaker.startPage -1;
-				var next = map.pageMaker.endPage +1;
-				
-				if(map.pageMaker.prev){
-					str4 = `<li class="paginate_button previous"><a href=`+prev+`>이전</a></li>`+str4;
-					console.log("prev if문 실행: "+ str4);
-				}
+			//게시글 목록 불어오기
+			getListPost(cri);
 			
-				//클릭한 페이지 번호 표시하기	
-				for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
-		
-					if(map.pageMaker.cri.pageNum == num){
-						console.log("페이지 번호 표시~");
-						str4 += "<li class='paginate_button active'>"; 
-						str4 +=	"<a href='"+num+"''>"+num+"</a>";
-			   			str4 +="</li>";
-					}else{
-						str4 += "<li class='paginate_button'>"; 
-						str4 +=	"<a href='"+num+"''>"+num+"</a>";
-			   			str4 +="</li>";
-					}
-				}
-				
-				if(map.pageMaker.next){
-					str4 += "<li class='paginate_button next'><a href='"+next+"'>이후</a></li>";
-					console.log("next if문 실행: "+ next);
-				}
-				
-				$(".row").html(str1);
-				$("#post-list").html(str);
-				$("#page").html(str4);
-			});
 		}); //end 글쓰기에서 리스트
 		
 		
@@ -2127,7 +1749,6 @@ $(document).ready(function(){
 				listPost.getPost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(post){
 					
 					var str ="";
-					
 					str = `<div class="row" style="margin-top: 60px">
 								<div class="col-sm-7" style="margin-left: 450px">
 								<h1 class="page-header">`+boardName+`</h1>
@@ -2194,116 +1815,12 @@ $(document).ready(function(){
 				console.log("게시글 수정 callback");
 				
 				//페이지 정보
-				var cri = {
-						pageNum:pageNum,
-						amount: 10
-				};
-				//post.js- getListPost 메서드 호출
-				listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
-					
-					boardName = map.board.board_name;
-					boardInfo = map.board.board_info;
-					var str ="";
-					var str1="";
-					var str4="";
-					
-					//게시글 기본틀 출력하는 부분
-					str1 = `<div class="row" style="margin-top: 60px">
-								<div class="col-sm-7" style="margin-left: 450px">
-								<h1 class="page-header">`+map.board.board_name+`</h1>
-								</div>
-								</div>
-							<div class="col-sm-7" style="margin-left: 450px">
-							  <div class="panel panel-default">
-							  <div class="panel-heading">`+map.board.board_info+`
-							<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
-							</div>
-						<div class="panel-body">
-							<table class="table table-striped table-bordered table-hover">
-								<thead>
-									<tr>
-										<th>번호</th>
-										<th>제목</th>
-										<th>작성자</th>
-										<th>작성일</th>
-									</tr>
-								</thead>
-								<tbody id="post-list">
-								
-								</tbody>
-							</table>
-							<div class='row'>
-							<div class="col-sm-7">
-								<form id='searchForm' action="/post/list" method='get'>
-									<select name='type'>
-										<option value=""
-											<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-										<option value="T"
-											<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-										<option value="C"
-											<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-										<option value="W"
-											<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-									</select> 
-									<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-									<button class='btn btn-default'>검색</button>
-								</form>
-							</div>
-							<div class='pull-right' style="margin-right: 20px">
-							<ul class="pagination" id="page">
+				var cri = { pageNum:pageNum,amount: 10};
 				
-							</ul>
-							</div> 
-						</div> 
-						</div>
-						</div>`+str1;
-					
-					//게시글 목록 출력하는 부분
-					for(var i = 0; i < map.getListPost.length; i++){
-						str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-						str +="<td>";
-						str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-						str +="</td>";
-						str +="<td>"+map.getListPost[i].writer+"</td>";
-						str +="<td>"+map.getListPost[i].post_date+"</td>";
-						str +="</tr>";	
-						}
-					
-					//게시글 페이지 처리
-					var prev = map.pageMaker.startPage -1;
-					var next = map.pageMaker.endPage +1;
-					
-					if(map.pageMaker.prev){
-						str4 = `<li class="paginate_button previous"><a href=`+prev+`>이전</a></li>`+str4;
-						console.log("prev if문 실행: "+ str4);
-					}
+				//게시글 목록불러오기
+				getListPost(cri);
 				
-					//클릭한 페이지 번호 표시하기	
-					for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
-			
-						if(map.pageMaker.cri.pageNum == num){
-							console.log("페이지 번호 표시~");
-							str4 += "<li class='paginate_button active'>"; 
-							str4 +=	"<a href='"+num+"''>"+num+"</a>";
-				   			str4 +="</li>";
-						}else{
-							str4 += "<li class='paginate_button'>"; 
-							str4 +=	"<a href='"+num+"''>"+num+"</a>";
-				   			str4 +="</li>";
-						}
-					}
-					
-					if(map.pageMaker.next){
-						str4 += "<li class='paginate_button next'><a href='"+next+"'>이후</a></li>";
-						console.log("next if문 실행: "+ next);
-					}
-					
-					$(".row").html(str1);
-					$("#post-list").html(str);
-					$("#page").html(str4);
-				});
-		
-			});
+			});//updatePost
 		}); //end update
 		
 		
@@ -2321,120 +1838,16 @@ $(document).ready(function(){
 			listPost.deletePost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(result){	
 				
 				//페이지 정보
-				var cri = {
-						pageNum:pageNum,
-						amount: 10
-				};
-				//post.js- getListPost 메서드 호출
-				listPost.getListPost(cri, {team_num:team_num, board_num:boardNum}, function(map){ //map으로 리턴받는다.
-					
-					boardName = map.board.board_name;
-					boardInfo = map.board.board_info;
-					var str ="";
-					var str1="";
-					var str4="";
-					
-					//게시글 기본틀 출력하는 부분
-					str1 = `<div class="row" style="margin-top: 60px">
-								<div class="col-sm-7" style="margin-left: 450px">
-								<h1 class="page-header">`+map.board.board_name+`</h1>
-								</div>
-								</div>
-							<div class="col-sm-7" style="margin-left: 450px">
-							  <div class="panel panel-default">
-							  <div class="panel-heading">`+map.board.board_info+`
-							<button id='regBtn' type="button" class="btn btn-primary btn-xs pull-right">글쓰기</button>
-							</div>
-						<div class="panel-body">
-							<table class="table table-striped table-bordered table-hover">
-								<thead>
-									<tr>
-										<th>번호</th>
-										<th>제목</th>
-										<th>작성자</th>
-										<th>작성일</th>
-									</tr>
-								</thead>
-								<tbody id="post-list">
-								
-								</tbody>
-							</table>
-							<div class='row'>
-							<div class="col-sm-7">
-								<form id='searchForm' action="/post/list" method='get'>
-									<select name='type'>
-										<option value=""
-											<c:out value="${pageMaker.cri.type == null?'selected':''}"/>>--</option>
-										<option value="T"
-											<c:out value="${pageMaker.cri.type eq 'T'?'selected':''}"/>>제목</option>
-										<option value="C"
-											<c:out value="${pageMaker.cri.type eq 'C'?'selected':''}"/>>내용</option>
-										<option value="W"
-											<c:out value="${pageMaker.cri.type eq 'W'?'selected':''}"/>>작성자</option>
-									</select> 
-									<input type='text' name='keyword' value='<c:out value="${pageMaker.cri.keyword}"/>' />
-									<button class='btn btn-default'>검색</button>
-								</form>
-							</div>
-							<div class='pull-right' style="margin-right: 20px">
-							<ul class="pagination" id="page">
+				var cri = {pageNum:pageNum, amount: 10};
 				
-							</ul>
-							</div> 
-						</div> 
-						</div>
-						</div>`+str1;
-					
-					//게시글 목록 출력하는 부분
-					for(var i = 0; i < map.getListPost.length; i++){
-						str +="<tr><td>"+map.getListPost[i].post_num+"</td>";
-						str +="<td>";
-						str +="<a class='move' href='"+map.getListPost[i].post_num+"'>"+map.getListPost[i].post_title+"<b>["+map.getListPost[i].replycnt+"]</b></a>";	
-						str +="</td>";
-						str +="<td>"+map.getListPost[i].writer+"</td>";
-						str +="<td>"+map.getListPost[i].post_date+"</td>";
-						str +="</tr>";	
-						}
-					
-					//게시글 페이지 처리
-					var prev = map.pageMaker.startPage -1;
-					var next = map.pageMaker.endPage +1;
-					
-					if(map.pageMaker.prev){
-						str4 = `<li class="paginate_button previous"><a href=`+prev+`>이전</a></li>`+str4;
-						console.log("prev if문 실행: "+ str4);
-					}
+				//게시글 목록불러오기
+				getListPost(cri);
 				
-					//클릭한 페이지 번호 표시하기	
-					for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
-			
-						if(map.pageMaker.cri.pageNum == num){
-							console.log("페이지 번호 표시~");
-							str4 += "<li class='paginate_button active'>"; 
-							str4 +=	"<a href='"+num+"''>"+num+"</a>";
-				   			str4 +="</li>";
-						}else{
-							str4 += "<li class='paginate_button'>"; 
-							str4 +=	"<a href='"+num+"''>"+num+"</a>";
-				   			str4 +="</li>";
-						}
-					}
-					
-					if(map.pageMaker.next){
-						str4 += "<li class='paginate_button next'><a href='"+next+"'>이후</a></li>";
-						console.log("next if문 실행: "+ next);
-					}
-					
-					$(".row").html(str1);
-					$("#post-list").html(str);
-					$("#page").html(str4);
-				});
-			});
+			});//end deletePost
 		}); //end delete
 		
-		
-		
-		//-------게시글 댓글 스크립트--------
+	
+		//--------------게시글 댓글 스크립트-------------
 		var replyModal = $("#reply-Modal");
 		var modalInputReply = replyModal.find("input[name='reply_contents']");
 		var modalInputReplyer = replyModal.find("input[name='reply_writer']");
@@ -2443,7 +1856,6 @@ $(document).ready(function(){
 		var replyModBtn = $("#replyModBtn"); //수정버튼
 		var replyRemoveBtn = $("#replyRemoveBtn");//삭제버튼
 		var replyRegisterBtn = $("#replyRegisterBtn");//등록버튼
-		
 		
 		//댓글 모달 닫기 버튼
 		$("#replyCloseBtn").on("click", function(e){
@@ -2464,7 +1876,6 @@ $(document).ready(function(){
 			getListReply();
 		});
 		
-		
 		//댓글 입력한 데이터 등록
 		replyRegisterBtn.on("click", function(e){
 			console.log("댓글 등록");
@@ -2483,7 +1894,6 @@ $(document).ready(function(){
 				getListReply(); //댓글등록 후 목록 갱신 
 				});
 			}); 
-		
 		
 		//동적으로 생성된 댓글 이벤트 위임, 특정댓글 보기
 		$(".row").on("click", "#replyUpdate", function(){
@@ -2516,7 +1926,6 @@ $(document).ready(function(){
 			});
 		});
 		
-
 		//댓글 삭제 
 	   	replyRemoveBtn.on("click", function (e){
 	   		
@@ -2560,12 +1969,7 @@ $(document).ready(function(){
 			});
 		});
 
-		
-		
-		
-		
-		
-		
+
 		//사용자 이미지 관련
 		$.ajax({
 				url:"/team/"+team_num+"/member/"+user_num,
@@ -2587,9 +1991,7 @@ $(document).ready(function(){
 					}
 				console.log("실행3");
 			}//end showProfile
-		
-		
-		
+
 }); //end document.ready1
 </script>
 
@@ -2763,10 +2165,6 @@ overflow-y : scroll;
   overflow-y: scroll;
 }
 </style>
-
-
-
-
 
 </body>
 </html>
