@@ -1444,7 +1444,7 @@ $(document).ready(function(){
 				for(var num = map.pageMaker.startPage; num <= map.pageMaker.endPage; num++){
 		
 					if(map.pageMaker.cri.pageNum == num){
-						console.log("페이지 번호 표시~");
+						console.log("페이지 번호 표시");
 						str4 += "<li class='paginate_button active'>"; 
 						str4 +=	"<a href='"+num+"''>"+num+"</a>";
 			   			str4 +="</li>";
@@ -1629,7 +1629,7 @@ $(document).ready(function(){
 
 			replyService.getListReply({pno:postNum}, function(list){ //reply.js 호출
 				var str ="";
-				console.log("댓글리스트 호출~");
+				console.log("댓글리스트 호출");
 				//댓글이 없을 경우
 				if(list == null || list.length == 0){
 					$(".chat").html("");
@@ -1650,7 +1650,12 @@ $(document).ready(function(){
 		$(".row").on("click", "button[data-oper='list']", function(e){
 			
 			//페이지 정보
-			var cri = {pageNum:pageNum, amount: 10};
+			if(!pageNum){
+				var cri = {pageNum:1, amount: 10};
+				console.log("페이지번호 없음");
+			}else{
+				var cri = {pageNum:pageNum, amount: 10};				
+			}	
 			
 			//게시글 목록 불러오기
 			getListPost(cri);
@@ -1795,10 +1800,10 @@ $(document).ready(function(){
 		$(".row").on("click", "button[data-oper='modify2']", function(e){
 		
 			if(!confirm("게시글을 수정하시겠습니까?")){
-	   			alert("취소되었습니다.");
+	   			alert("취소되었습니다!");
 	   		 	return false;
 	   		}
-			else {alert("게시글이 수정되었습니다.")};
+			else {alert("게시글이 수정되었습니다!")};
 			
 			var post_title = document.getElementById('post_title').value;
 			var post_contents = document.getElementById('post_contents').value;
@@ -1828,11 +1833,11 @@ $(document).ready(function(){
 		//수정폼에서 '삭제' 버튼을 클릭하면 delete 요청
 		$(".row").on("click", "button[data-oper='remove']", function(e){
 		
-			if(!confirm("게시글을 삭제하시겠습니까?")){
-	   			alert("취소되었습니다.");
+			if(!confirm("정말 게시글을 삭제하시겠습니까?")){
+	   			alert("취소되었습니다!");
 	   		 	return false;
 	   		}
-			else {alert("게시글이 삭제되었습니다.")};
+			else {alert("게시글이 삭제되었습니다!")};
 			
 			//post.js delete Ajax요청
 			listPost.deletePost({team_num:team_num, board_num:boardNum, post_num:postNum}, function(result){	
@@ -1888,7 +1893,7 @@ $(document).ready(function(){
 			
 			replyService.insertReply(reply, function(result){ //reply.js 호출
 				
-				alert("댓글이 등록되었습니다.");
+				alert("댓글이 등록되었습니다!");
 				replyModal.find("input").val(""); //입력항목 비우고 
 				replyModal.modal("hide");	//모달창 닫기
 				getListReply(); //댓글등록 후 목록 갱신 
@@ -1929,8 +1934,8 @@ $(document).ready(function(){
 		//댓글 삭제 
 	   	replyRemoveBtn.on("click", function (e){
 	   		
-	   		if(!confirm("정말로 삭제하시겠습니까?")){
-	   			alert("취소되었습니다.")
+	   		if(!confirm("정말 삭제하시겠습니까?")){
+	   			alert("취소되었습니다!")
 	   			replyModal.modal("hide");
 	   		}
 	   	  var reply_num = replyModal.data("reply_num");
@@ -1938,12 +1943,12 @@ $(document).ready(function(){
 	   		//reply.js 호출
 	   	 	 replyService.deleteReply(reply_num, function(result){
 	   		  
-	   	    alert("댓글이 삭제되었습니다.");
+	   	    alert("댓글이 삭제되었습니다!");
 	   	   	replyModal.modal("hide");
 	   	   	
 	   	 	getListReply(); //댓글 삭제 후 댓글목록 갱신
 	   	 	
-	   	 	console.log("댓글 삭제~");
+	   	 	console.log("댓글 삭제");
 	   	  });
 	 });
 		
@@ -1957,15 +1962,15 @@ $(document).ready(function(){
 				replyService.updateReply(reply, function(result){
 				
 				if(!confirm("정말로 수정하시겠습니까?")){
-		   			alert("댓글이 수정되었습니다.")
+		   			alert("댓글이 수정되었습니다!")
 		   			replyModal.modal("hide");
 		   		}
 			 	
-				alert("댓글이 수정되었습니다.");
+				alert("댓글이 수정되었습니다!");
 				replyModal.modal("hide");
 				
 				getListReply(); //댓글 수정 후 댓글목록 갱신
-				console.log("댓글 수정~");
+				console.log("댓글 수정");
 			});
 		});
 
