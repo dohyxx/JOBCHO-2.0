@@ -879,9 +879,12 @@
 		</div>	
 	</div>
 	<!--삭제된 오늘의 할일 모달 끝 -->
-	
-	  <!-------- 댓글 Modal --------->
-      <div class="modal fade" id="replyModal" tabindex="-1" role="dialog"
+
+	</div> <!-- 전체모달 div마지막 -->
+		
+		
+		<!-------- 댓글 Modal --------->
+      <div class="modal fade" id="reply-Modal" tabindex="-1" role="dialog"
         aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
           <div class="modal-content">
@@ -915,15 +918,6 @@
 	</div>
 </div>
 		
-		
-		
-		
-
-	</div> <!-- 전체모달 div마지막 -->
-		
-		
-		
-		
 
 
 	
@@ -940,6 +934,8 @@
 	<script src="/resources/members/js/memberProfile.js"></script>
 	<!-- 외부js에 변수 전달 -->
 	<input type="hidden" id="userName"
+		value="<sec:authentication property="principal.users.user_name"/>">
+	<input type="hidden" id="user_name"
 		value="<sec:authentication property="principal.users.user_name"/>">
 
 	<input type="hidden" id="userNum"
@@ -995,8 +991,6 @@
         	//로그인한 유저 넘버
         	var user_num=$("#userNum").val();
         	
-        	
-        	
         	//컨텐츠바디에 현재팀의 멤버리스트 출력
         	function showMemberList(result){
         		str=""
@@ -1020,6 +1014,7 @@
                                     <button class="updataTeamModal" value="`+item.member_num+`">팀설정</button>
                                 </div>
                             </div>`+str;
+                         
 	                    }else{
 	                    	str +=`<div class="job-container">
                                 <div class="team-profile-image" style="background-image: url('/display?filename=`+item.profile_name+`');"></div>
@@ -1279,7 +1274,7 @@ $(document).ready(function(){
 	var team_num =$("#teamNum").val();
 	var boardUL = $("#board"); //게시판 리스트 들어가는 부분
 	var user_num = $("#userNum").val();
-	var replyUL =$(".chat");
+	var user_name = $("#user_name").val(); //현재 로그인한 user_name
 	
 	console.log("유저번호: " + user_num)
 	
@@ -1364,28 +1359,6 @@ $(document).ready(function(){
 		var boardInfo ="";
 		var pageNum = "";
 		var postNum = "";
-		
-		//---------댓글 리스트 불러오기---------
-		function getListReply(){
-			console.log("댓글리스트 호출~");
-
-			replyService.getListReply({pno:postNum}, function(list){ //reply.js 호출
-				var str ="";
-		
-				//댓글이 없을 경우
-				if(list == null || list.length == 0){
-					replyUL.html("");
-					return;
-				}
-				for (var i = 0, len = list.length || 0; i < len; i++) {
-			           str +="<li class='left clearfix' data-reply_num='"+list[i].reply_num+"'>";
-			           str +="  <div><div class='header'><strong class='primary-font'>"+list[i].reply_writer+"</strong>"; 
-			           str +="    <small class='pull-right text-muted'>"+replyService.replyTime(list[i].reply_date)+"</small></div>";
-			           str +="    <p>"+list[i].reply_contents+"</p></div></li>";
-			         }
-				replyUL.html(str);
-			});
-		}//end getListReply
 	
 		
 		//게시판 이름 클릭시 게시글 출력(비동기식 전환)
@@ -1702,10 +1675,31 @@ $(document).ready(function(){
 				  		</div>`+str;
 				  		
 				  		$(".row").html(str);
+				  
+				  		getListReply();	//댓글 리스트 호출
 			});
-			//댓글 리스트 호출
-	  		getListReply();
 		}); // end getPost
+		
+		//---------댓글 리스트 불러오기---------
+		function getListReply(){
+
+			replyService.getListReply({pno:postNum}, function(list){ //reply.js 호출
+				var str ="";
+				console.log("댓글리스트 호출~" + list[0].reply_contents);
+				//댓글이 없을 경우
+				if(list == null || list.length == 0){
+					$(".chat").html("");
+					return;
+				}
+				for (var i = 0, len = list.length || 0; i < len; i++) {
+			           str +="<li class='left clearfix' id='replyUpdate' data-reply_num='"+list[i].reply_num+"'>";
+			           str +="  <div><div class='header'><strong class='primary-font'>"+list[i].reply_writer+"</strong>"; 
+			           str +="    <small class='pull-right text-muted'>"+replyService.replyTime(list[i].reply_date)+"</small></div>";
+			           str +="    <p>"+list[i].reply_contents+"</p></div></li>";
+			         }
+				$(".chat").html(str);
+			});
+		}//end getListReply
 		
 			
 		//상세조회에서 목록버튼 클릭 시 다시 리스트로 돌아간다.
@@ -2431,7 +2425,7 @@ $(document).ready(function(){
 		
 		
 		//-------게시글 댓글 스크립트--------
-		var replyModal = $("#replyModal");
+		var replyModal = $("#reply-Modal");
 		var modalInputReply = replyModal.find("input[name='reply_contents']");
 		var modalInputReplyer = replyModal.find("input[name='reply_writer']");
 		var modalInputReplyDate = replyModal.find("input[name='replyDate']");
@@ -2482,10 +2476,10 @@ $(document).ready(function(){
 		
 		
 		//동적으로 생성된 댓글 이벤트 위임, 특정댓글 보기
-		$(".chat").on("click", "li", function(){
+		$(".row").on("click", "#replyUpdate", function(){
 			
 			var reply_num = $(this).data("reply_num");
-			console.log(reply_num);
+			console.log("댓글 이벤트 위임" +reply_num);
 			
 			//reply.js 호출
 			replyService.getReply(reply_num, function(reply){  //callback함수
@@ -2731,9 +2725,37 @@ height : 400px;
 overflow-y : scroll;
 }
 
-
-
+.chat {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chat li {
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px dotted #999999;
+}
+.chat li.left .chat-body {
+  margin-left: 60px;
+}
+.chat li.right .chat-body {
+  margin-right: 60px;
+}
+.chat li .chat-body p {
+  margin: 0;
+}
+.panel .slidedown .glyphicon,
+.chat .glyphicon {
+  margin-right: 5px;
+}
+.chat-panel .panel-body {
+  height: 350px;
+  overflow-y: scroll;
+}
 </style>
+
+
+
 
 
 </body>
